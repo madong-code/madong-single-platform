@@ -43,13 +43,22 @@ const formData = reactive({
   content_string: '',
   remark: '',
   enabled: 1,
-  group_code: 'default',
+  group_code: 'common',
 });
 
 const rules = {
   code: [{ required: true, message: $t('common.required'), trigger: 'blur' }],
   name: [{ required: true, message: $t('common.required'), trigger: 'blur' }],
+  group_code: [
+    { required: true, message: $t('common.required'), trigger: 'change' },
+  ],
 };
+
+const groupOptions = [
+  { label: $t('system.config.site.title'), value: 'system' },
+  { label: $t('system.config.upload.title'), value: 'setting' },
+  { label: $t('system.config.common.title'), value: 'common' },
+];
 
 const contentPlaceholder = computed(() =>
   formData.content_type === 'string'
@@ -144,7 +153,7 @@ const show = ({ data, isEdit: edit, getCrudApi, formData: fd }: any) => {
       content_string: data.content ?? '',
       remark: data.remark ?? '',
       enabled: data.enabled ?? 1,
-      group_code: 'default',
+      group_code: data.group_code ?? 'common',
     });
     try {
       const parsed = JSON.parse(data.content ?? '');
@@ -164,7 +173,7 @@ const show = ({ data, isEdit: edit, getCrudApi, formData: fd }: any) => {
       content_string: '',
       remark: '',
       enabled: 1,
-      group_code: 'default',
+      group_code: 'common',
     });
     if (formData.content_kv.length === 0) {
       addKVRow();
@@ -253,8 +262,22 @@ defineExpose({ show });
         />
       </ElFormItem>
 
-      <ElFormItem :label="$t('system.config.common.form.group_code')">
-        <ElInput :model-value="formData.group_code" disabled />
+      <ElFormItem
+        :label="$t('system.config.common.form.group_code')"
+        prop="group_code"
+      >
+        <ElSelect
+          v-model="formData.group_code"
+          :placeholder="$t('system.config.common.form.placeholder.group_code')"
+          style="width: 100%"
+        >
+          <ElOption
+            v-for="opt in groupOptions"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </ElSelect>
       </ElFormItem>
 
       <ElFormItem :label="$t('system.config.common.form.content_type')">

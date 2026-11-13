@@ -20,6 +20,13 @@ const props = withDefaults(
     requestMethod: 'get',
     labelField: 'label',
     valueField: 'value',
+    api: '',
+    data: () => ({}),
+    fieldName: '',
+    params: () => ({}),
+    resultField: '',
+    schema: undefined,
+    value: null,
   },
 );
 
@@ -30,25 +37,18 @@ const labelField = computed(() => props.labelField || 'label');
 const valueField = computed(() => props.valueField || 'value');
 
 const displayValue = computed(() => {
-  if (
-    options.value.length === 0 ||
-    props.value === null ||
-    props.value === undefined
-  )
-    return null;
+  if (options.value.length === 0 || props.value == null) return null;
 
   if (Array.isArray(props.value)) {
     const labels = props.value.map((val) => {
-      const opt = options.value.find(
-        (o: any) => String(o[valueField.value]) === String(val),
-      );
+      const opt = options.value.find((o: any) => o[valueField.value] == val);
       return opt ? opt[labelField.value] : val;
     });
     return labels.join(', ');
   }
 
   const opt = options.value.find(
-    (o: any) => String(o[valueField.value]) === String(props.value),
+    (o: any) => o[valueField.value] == props.value,
   );
   return opt ? opt[labelField.value] : null;
 });
@@ -67,9 +67,13 @@ const fetchData = async () => {
     });
     let data = res;
     if (props.resultField) {
-      for (const key of props.resultField.split('.')) {
-        data = data?.[key];
+      const resultField = props.resultField;
+      let current: any = res;
+      for (const k of resultField.split('.')) {
+        if (current === null || current === undefined) break;
+        current = current[k];
       }
+      data = current;
     }
     options.value = Array.isArray(data) ? data : [];
   } catch (error) {

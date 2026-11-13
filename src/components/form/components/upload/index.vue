@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, useAttrs, useSlots, watch } from 'vue';
 
+import { useAccessStore } from '#/core/stores';
+
 import { ElButton, ElMessage } from 'element-plus';
 
 import { Icon } from '#/components/icon';
-import { useAccessStore } from '#/core/stores';
 
 defineOptions({
   name: 'Upload',

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** 三步卸载对话框：卸载确认 → 卸载进度 → 卸载完成 — 100% 移植自 madong-vue module-uninstall-dialog */
+/** 三步卸载对话框：卸载确认 → 卸载进度 → 卸载完成 */
 import { nextTick, onUnmounted, ref } from 'vue';
 
 import { ElAlert, ElButton, ElCard, ElMessage, ElProgress } from 'element-plus';
@@ -11,7 +11,6 @@ import { $t } from '#/locales';
 defineOptions({ name: 'ModuleUninstallDialog' });
 
 const props = defineProps<{ plugin: any }>();
-
 const emit = defineEmits<{ close: []; refresh: [] }>();
 
 const [Dialog, dialogApi] = useDialog({
@@ -35,7 +34,7 @@ let sseConn: null | { close: () => void } = null;
 
 const openDialog = async () => {
   if (!props.plugin?.code) {
-    ElMessage.error($t('app.plugin.market.invalid_uninstall'));
+    ElMessage.error('模块信息不完整');
     return;
   }
   dialogApi.open();
@@ -52,7 +51,6 @@ const handleClose = () => {
   dialogApi.close();
   emit('close');
 };
-
 const scrollToBottom = () => {
   nextTick(() => {
     if (logsContainer.value)
@@ -63,17 +61,14 @@ const scrollToBottom = () => {
 const startUninstall = async () => {
   currentStep.value = 2;
   uninstallProgress.value = 0;
-  uninstallLogs.value = [$t('app.plugin.market.standalone.uninstall.log_start')];
+  uninstallLogs.value = ['开始卸载...'];
   startSseUninstall();
 };
 
 const startSseUninstall = () => {
   sseConn = sse(`/plugin/${props.plugin.code}/uninstall`, {
-    open: () => {
-      // SSE连接已打开
-    },
+    open: () => {},
     progress: (payload: any) => {
-      // Sse::make() 包裹数据，实际内容在 payload.data 中
       const eventData = payload?.data || payload;
       if (eventData.progress !== undefined)
         uninstallProgress.value = eventData.progress;
@@ -95,14 +90,9 @@ const startSseUninstall = () => {
       scrollToBottom();
     },
     warning: (payload: any) => {
-      // warning 处理器：插件已安装等提示信息
       const eventData = payload?.data || payload;
       if (eventData.message) {
-        uninstallLogs.value.push(
-          $t('app.plugin.market.standalone.uninstall.log_warn_prefix', {
-            msg: eventData.message,
-          }),
-        );
+        uninstallLogs.value.push(`警告: ${eventData.message}`);
         scrollToBottom();
       }
       uninstallStatus.value = 'warning';
@@ -112,14 +102,9 @@ const startSseUninstall = () => {
       scrollToBottom();
     },
     error: (payload: any) => {
-      // error 处理器仅在服务器主动发送 event: error 时触发
       const eventData = payload?.data || payload;
       if (eventData.message) {
-        uninstallLogs.value.push(
-          $t('app.plugin.market.standalone.uninstall.log_error_prefix', {
-            msg: eventData.message,
-          }),
-        );
+        uninstallLogs.value.push(`错误: ${eventData.message}`);
         uninstallStatus.value = 'exception';
         currentStep.value = 3;
         uninstallResult.value = 'error';
@@ -128,11 +113,8 @@ const startSseUninstall = () => {
       }
     },
     onError: () => {
-      // onError 仅在连接意外断开时触发，completed/error 已处理时不覆盖
       if (currentStep.value < 3) {
-        uninstallLogs.value.push(
-          $t('app.plugin.market.standalone.uninstall.sse_error'),
-        );
+        uninstallLogs.value.push('SSE连接错误');
         uninstallStatus.value = 'exception';
         currentStep.value = 3;
         uninstallResult.value = 'error';
@@ -141,7 +123,6 @@ const startSseUninstall = () => {
       }
     },
     message: (payload: any) => {
-      // 兜底处理器：捕获没有命名事件的 SSE 消息
       const eventData = payload?.data || payload;
       if (eventData.message) {
         uninstallLogs.value.push(eventData.message);
@@ -155,11 +136,9 @@ const handleRefresh = () => {
   emit('refresh');
   handleClose();
 };
-
 onUnmounted(() => {
   sseConn?.close();
 });
-
 defineExpose({ openDialog });
 </script>
 
@@ -167,7 +146,6 @@ defineExpose({ openDialog });
   <Dialog>
     <ElCard class="box-card !border-none" shadow="never">
       <div v-loading="loading">
-        <!-- 步骤指示器 -->
         <div class="steps-indicator mb-6">
           <div
             class="step"
@@ -196,8 +174,6 @@ defineExpose({ openDialog });
             </div>
           </div>
         </div>
-
-        <!-- 卸载确认 -->
         <div v-if="currentStep === 1" class="mt-5 uninstall-confirm">
           <ElAlert
             :title="$t('app.plugin.market.standalone.uninstall.step1')"
@@ -244,8 +220,6 @@ defineExpose({ openDialog });
             </ElButton>
           </div>
         </div>
-
-        <!-- 卸载进度 -->
         <div v-else-if="currentStep === 2" class="uninstall-progress mt-5">
           <ElProgress
             :percentage="uninstallProgress"
@@ -263,29 +237,25 @@ defineExpose({ openDialog });
             </div>
           </div>
         </div>
-
-        <!-- 卸载完成 -->
         <div v-else-if="currentStep === 3" class="uninstall-complete">
-          <div class="mt-2">
-            <p class="text-sm font-medium text-gray-700 mb-2">
-              {{ $t('app.plugin.market.standalone.uninstall.log_title') }}：
-            </p>
-            <div ref="logsContainer" class="uninstall-logs">
-              <div
-                v-for="(log, idx) in uninstallLogs"
-                :key="idx"
-                class="text-sm mb-1"
-                :class="{
-                  'text-green-400':
-                    idx === uninstallLogs.length - 1 &&
-                    uninstallResult === 'success',
-                  'text-red-400':
-                    idx === uninstallLogs.length - 1 &&
-                    uninstallResult === 'error',
-                }"
-              >
-                {{ log }}
-              </div>
+          <p class="text-sm font-medium text-gray-700 mb-2">
+            {{ $t('app.plugin.market.standalone.uninstall.log_title') }}：
+          </p>
+          <div ref="logsContainer" class="uninstall-logs">
+            <div
+              v-for="(log, idx) in uninstallLogs"
+              :key="idx"
+              class="text-sm mb-1"
+              :class="{
+                'text-green-400':
+                  idx === uninstallLogs.length - 1 &&
+                  uninstallResult === 'success',
+                'text-red-400':
+                  idx === uninstallLogs.length - 1 &&
+                  uninstallResult === 'error',
+              }"
+            >
+              {{ log }}
             </div>
           </div>
           <div class="mt-6 flex justify-end">

@@ -4,14 +4,16 @@
     "columns": {
       "title": "Title",
       "type": "Type",
+      "source": "Source",
+      "tenant_id": "Tenant",
       "rule": "Rule",
       "singleton": "Singleton",
       "rule_name": "Rule Name",
       "target": "Target",
       "parameter": "Parameter",
       "enabled": "Status",
-      "source": "Source",
-      "last_running_time": "Last Running Time"
+      "running_status": "Running",
+      "last_running_time": "Last Run Time"
     },
     "search": {
       "title": "Title",
@@ -26,10 +28,12 @@
       }
     }
   },
-  "form": {
-    "id": "ID",
+    "form": {
     "title": "Title",
     "type": "Type",
+    "placeholder": {
+      "type": "Please select type"
+    },
     "task_cycle": "Task Cycle",
     "second": "Second",
     "week": "Week",
@@ -71,5 +75,6 @@
       "hour": "Hour",
       "minute": "Minute"
     }
+
   }
 }

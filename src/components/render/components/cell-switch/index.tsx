@@ -1,7 +1,8 @@
+import { ElSwitch } from 'element-plus';
+
 /**
  * 单元格开关渲染器
  */
-import { ElSwitch } from 'element-plus';
 
 export const CellSwitchRenderer = {
   renderTableDefault({ attrs, props }: any, { column, row }: any) {

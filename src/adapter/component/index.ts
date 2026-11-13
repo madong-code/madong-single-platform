@@ -21,19 +21,19 @@ import type {
 
 import type { Component } from 'vue';
 
-import type { Recordable } from '#/core/shared/types';
 import type {
   ApiComponentSharedProps,
   BaseFormComponentType,
   IconPickerProps,
 } from '#/core/ui/common';
+import type { Recordable } from '#/core/shared/types';
 
 import { defineAsyncComponent, defineComponent, h, ref } from 'vue';
 
-import { ElNotification } from 'element-plus';
-
-import { $t } from '#/core/locales';
 import { globalShareState } from '#/core/ui/common';
+import { $t } from '#/core/locales';
+
+import { ElNotification } from 'element-plus';
 
 import { getAll as getFormComponents } from '../../components/form/component-map';
 
@@ -46,6 +46,7 @@ const ElDatePicker = defineAsyncComponent(() =>
     import('element-plus/es/components/date-picker/style/css'),
   ]).then(([res]) => res.ElDatePicker),
 );
+
 const ElInput = defineAsyncComponent(() =>
   Promise.all([
     import('element-plus/es/components/input/index'),
@@ -58,6 +59,20 @@ const ElInputNumber = defineAsyncComponent(() =>
     import('element-plus/es/components/input-number/style/css'),
   ]).then(([res]) => res.ElInputNumber),
 );
+
+const ElTreeSelect = defineAsyncComponent(() =>
+  Promise.all([
+    import('element-plus/es/components/tree-select/index'),
+    import('element-plus/es/components/tree-select/style/css'),
+  ]).then(([res]) => res.ElTreeSelect),
+);
+const ElColorPicker = defineAsyncComponent(() =>
+  Promise.all([
+    import('element-plus/es/components/color-picker/index'),
+    import('element-plus/es/components/color-picker/style/css'),
+  ]).then(([res]) => res.ElColorPicker),
+);
+
 const withDefaultPlaceholder = <T extends Component>(
   component: T,
   type: 'input' | 'select',
@@ -103,17 +118,15 @@ export type ComponentType =
   | 'Avatar'
   | 'Checkbox'
   | 'CheckboxGroup'
+  | 'ColorPicker'
   | 'DatePicker'
   | 'Divider'
   | 'Editor'
-  | 'EntitySelector'
   | 'IconPicker'
   | 'Input'
   | 'InputNumber'
-  | 'KeyValueEditor'
   | 'Password'
   | 'RadioGroup'
-  | 'ReposEditor'
   | 'Select'
   | 'Space'
   | 'Switch'
@@ -136,16 +149,15 @@ export interface ComponentPropsMap {
   Avatar: Record<string, any>;
   Checkbox: CheckboxProps;
   CheckboxGroup: CheckboxGroupProps;
+  ColorPicker: Record<string, any>;
   DatePicker: DatePickerProps;
   Divider: DividerProps;
   Editor: Record<string, any>;
-  EntitySelector: Record<string, any>;
   IconPicker: IconPickerProps;
   Input: InputProps;
   InputNumber: InputNumberProps;
   Password: Record<string, any>;
   RadioGroup: RadioGroupProps;
-  ReposEditor: Record<string, any>;
   Select: SelectV2Props;
   Space: SpaceProps;
   Switch: SwitchProps;
@@ -299,7 +311,8 @@ async function initComponentAdapter() {
         slots,
       );
     },
-    // TreeSelect: withDefaultPlaceholder(ElTreeSelect, 'select'),
+    ColorPicker: withDefaultPlaceholder(ElColorPicker, 'input'),
+    TreeSelect: withDefaultPlaceholder(ElTreeSelect, 'select'),
     // Upload: ElUpload,
   };
 

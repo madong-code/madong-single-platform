@@ -3,8 +3,9 @@ import type { VbenFormSchema } from '#/core/ui/common';
 
 import { computed, markRaw } from 'vue';
 
-import { $t } from '#/core/locales';
 import { AuthenticationLogin, SliderCaptcha, z } from '#/core/ui/common';
+import { $t } from '#/core/locales';
+
 import { useAuthStore } from '#/store';
 
 defineOptions({ name: 'Login' });

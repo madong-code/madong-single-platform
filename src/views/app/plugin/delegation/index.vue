@@ -1,33 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-
-import { requestClient } from '#/api/request';
-
-import SaaSDelegation from './SaaSDelegation.vue';
+/** 平台端 - 授权信息(对接官网平台)
+ *  - SaaS 授权码认证(公司名/域名/授权码 + 重新认证对话框)
+ *  - 调 /plugin/auth-info (GET/POST)
+ */
 import StandaloneDelegation from './StandaloneDelegation.vue';
 
 defineOptions({ name: 'AppPluginDelegation' });
-
-const mode = ref<string>('standalone');
-const loading = ref(true);
-
-onMounted(async () => {
-  try {
-    const res: any = await requestClient.get('/site/mode');
-    mode.value = res?.mode || 'standalone';
-  } catch {
-    mode.value = 'standalone';
-  } finally {
-    loading.value = false;
-  }
-});
-
-const isSaasMode = computed(() => mode.value === 'saas');
 </script>
 
 <template>
-  <div v-loading="loading" class="h-full">
-    <SaaSDelegation v-if="isSaasMode" />
-    <StandaloneDelegation v-else-if="!loading" />
+  <div class="h-full">
+    <StandaloneDelegation />
   </div>
 </template>

@@ -13,6 +13,10 @@ const props = withDefaults(
   {
     type: 'text',
     rows: 1,
+    data: () => ({}),
+    fieldName: '',
+    schema: undefined,
+    value: undefined,
   },
 );
 

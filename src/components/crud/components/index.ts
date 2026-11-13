@@ -23,20 +23,4 @@ export type {
   TreeConfig,
 } from './types';
 
-export {
-  // 格式化工具
-  formatAmountValue,
-  formatDateValue,
-  formatEnumValue,
-  formatTextValue,
-  formatViewerValue,
-  isEmptyValue,
-  // 查看器
-  DetailViewer,
-} from './viewer';
-export type {
-  DetailViewerProps,
-  ViewerCommonProps,
-  ViewerEnumOption,
-  ViewerFormatType,
-} from './viewer';
+export { DetailViewer } from './viewer';

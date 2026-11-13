@@ -13,6 +13,10 @@ const props = withDefaults(
   {
     activeText: '是',
     inactiveText: '否',
+    data: () => ({}),
+    fieldName: '',
+    schema: undefined,
+    value: undefined,
   },
 );
 

@@ -3,14 +3,18 @@ import type { Recordable } from '#/core/shared/types';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { LOGIN_PATH } from '#/core/shared/constants';
+import { preferences } from '#/core/preferences';
+import { resetAllStores, useAccessStore, useUserStore } from '#/core/stores';
+
 import { defineStore } from 'pinia';
 
-import { getAccessCodesApi, getUserInfoApi, loginApi, logoutApi } from '#/api';
-import { preferences } from '#/core/preferences';
-import { LOGIN_PATH } from '#/core/shared/constants';
-import { resetAllStores, useAccessStore, useUserStore } from '#/core/stores';
+import { getUserInfoApi, loginApi, logoutApi } from '#/api';
+import { destroyMenuBadgePush } from '#/hooks/use-menu-badge-push';
+import { useMenuBadgeStore } from '#/store/modules/menu-badge';
 import { useSiteConfigStore } from '#/store/modules/site-config';
-import { buildAppUrl } from '#/utils/url';
+import { stopBadgeApplier } from '#/utils/menu-badge-applier';
+import { destroyPushClient } from '#/utils/push/client';
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
@@ -30,9 +34,8 @@ export const useAuthStore = defineStore('auth', () => {
   ) {
     try {
       loginLoading.value = true;
-      const loginResult = await loginApi(params);
       const { access_token: accessToken, refresh_token: refreshToken } =
-        loginResult;
+        await loginApi(params);
 
       // 如果成功获取到 accessToken
       if (accessToken) {
@@ -40,19 +43,13 @@ export const useAuthStore = defineStore('auth', () => {
         accessStore.setAccessToken(accessToken);
         accessStore.setRefreshToken(refreshToken);
 
-        // 登录成功后立即预加载权限码，确保路由渲染（权限判断钩子）前权限码已就绪。
-        // 避免「刚登录时按钮缺失、刷新后正常」的时序竞态；失败不阻塞登录，由路由守卫补偿。
+        // 登录成功后重新拉取站点配置，覆盖登录页使用的平台配置（Logo/标题/Favicon）
+        // 必须在进入主布局前完成，否则会短暂展示登录页的平台品牌
         try {
-          const accessCodes = await getAccessCodesApi();
-          accessStore.setAccessCodes(accessCodes);
+          await useSiteConfigStore().syncTenantPreferences();
         } catch {
-          // 预加载失败由 setupAccessGuard 补偿加载
+          // 站点配置同步失败不阻塞登录
         }
-
-        // 登录成功后同步站点配置到 preferences（logo/标题/favicon）。
-        // 与登录页共用 GET /system/config/code/site_setting，保证登录前后展示一致。
-        // 内部已做异常保护，不会阻塞登录流程。
-        await useSiteConfigStore().syncSitePreferences();
 
         if (accessStore.loginExpired) {
           accessStore.setLoginExpired(false);
@@ -74,31 +71,30 @@ export const useAuthStore = defineStore('auth', () => {
       // 不做任何处理
     }
 
+    // 0. 销毁 WS 连接与徽标订阅（须在 resetAllStores 前，避免残留订阅）
+    destroyMenuBadgePush();
+    stopBadgeApplier();
+    destroyPushClient();
+    useMenuBadgeStore().clearAll();
+
     // 1. 重置所有 store（access/user/siteConfig/tabbar...）
     resetAllStores();
 
-    // 2. 强制清除 token 并写入 storage，防止 pinia-plugin-persistedstate 在 $reset 后恢复旧 token
+    // 2. 强制清除 token 并写入 storage，防止 persist 插件恢复旧 token
     accessStore.$patch({
       accessToken: null,
       refreshToken: null,
-      isAccessChecked: false,
-      loginExpired: false,
     });
 
-    // 3. 清除 localStorage 中的持久化数据，防止 persist 插件在导航守卫中恢复 token
-    try {
-      const namespace = `${import.meta.env.VITE_APP_NAMESPACE}-${import.meta.env.VITE_APP_VERSION}-${import.meta.env.PROD ? 'prod' : 'dev'}`;
-      localStorage.removeItem(`${namespace}-core-access`);
-    } catch {}
-
-    // 4. 构建登录页 URL，如有需要携带 redirect 参数
-    const loginUrl = redirect
-      ? `${LOGIN_PATH}?redirect=${encodeURIComponent(router.currentRoute.value.fullPath)}`
-      : LOGIN_PATH;
-
-    // 5. 使用硬跳转确保一定到达登录页（绕过路由守卫和 persist 插件的竞态问题）
-    //    必须经 buildAppUrl 拼上部署 base（如 /admin/），否则子目录部署会 404
-    window.location.assign(buildAppUrl(loginUrl));
+    // 3. 回登录页
+    await router.replace({
+      path: LOGIN_PATH,
+      query: redirect
+        ? {
+            redirect: encodeURIComponent(router.currentRoute.value.fullPath),
+          }
+        : {},
+    });
   }
 
   async function fetchUserInfo() {

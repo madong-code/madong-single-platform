@@ -12,12 +12,17 @@ const props = withDefaults(
     schema?: any;
     value?: (number | string)[] | null | string | undefined;
   }>(),
-  {},
+  {
+    data: () => ({}),
+    fieldName: '',
+    options: () => [],
+    schema: undefined,
+    value: undefined,
+  },
 );
 
 const displayLabels = computed(() => {
-  const options = props.options;
-  if (!options || options.length === 0) {
+  if (!props.options || props.options.length === 0) {
     return [];
   }
 
@@ -32,7 +37,7 @@ const displayLabels = computed(() => {
 
   return values
     .map((val) => {
-      const option = options.find((opt) => opt.value === val);
+      const option = props.options!.find((opt) => opt.value === val);
       return option ? option.label : val;
     })
     .filter(Boolean);

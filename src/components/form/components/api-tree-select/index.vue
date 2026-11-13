@@ -16,6 +16,7 @@ const props = withDefaults(
     valueField: 'id',
     labelField: 'name',
     childrenField: 'children',
+    modelValue: null,
   },
 );
 

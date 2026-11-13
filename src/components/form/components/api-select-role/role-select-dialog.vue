@@ -134,7 +134,7 @@ loadRoles();
         <ElCheckbox
           v-if="multiple"
           :model-value="isSelected(item)"
-          @update:model-value="(val) => handleCheck(Boolean(val), item)"
+          @update:model-value="(val: any) => handleCheck(val, item)"
           @click.stop
         />
         <div class="role-info">

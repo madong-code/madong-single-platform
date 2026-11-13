@@ -8,7 +8,12 @@ const props = withDefaults(
     schema?: any;
     value?: null | string | undefined | { name: string; url: string }[];
   }>(),
-  {},
+  {
+    data: () => ({}),
+    fieldName: '',
+    schema: undefined,
+    value: undefined,
+  },
 );
 
 const files = computed(() => {

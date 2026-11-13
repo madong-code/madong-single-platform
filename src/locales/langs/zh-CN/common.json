@@ -74,7 +74,8 @@
     "no": "否"
   },
 
-  "operation": "操作",
+  "success": "操作成功",
+
   "operation_success": "操作成功",
   "confirm": "确认",
   "cancel": "取消",

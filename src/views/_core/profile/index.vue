@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import { useUserStore } from '#/core/stores';
+
 import { ElMessage } from 'element-plus';
 
 import { Page } from '#/components/page';
-import { useUserStore } from '#/core/stores';
 import { $t } from '#/locales';
 
 import BaseSetting from './components/base-setting.vue';
-import OnlineDevice from './components/online-device.vue';
 import ProfileCard from './components/profile-card.vue';
 import SecuritySetting from './components/security-setting.vue';
 
@@ -37,11 +37,6 @@ function handleAvatarSuccess(newUrl: string) {
           class="rounded-xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 p-5"
         >
           <SecuritySetting />
-        </div>
-        <div
-          class="rounded-xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 p-5"
-        >
-          <OnlineDevice />
         </div>
       </div>
     </div>

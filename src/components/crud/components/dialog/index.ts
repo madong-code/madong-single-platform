@@ -50,9 +50,9 @@ export function useFormDialog(options: FormDialogOptions) {
       setup(_, { expose }) {
         expose(api);
         return () =>
-          h(FormDialogComponent as any, {
+          h(FormDialogComponent, {
             ref: dialogRef,
-            options: dialogOptionsComputed.value,
+            options: dialogOptionsComputed.value as any,
           });
       },
     }),

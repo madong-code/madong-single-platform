@@ -10,7 +10,7 @@ const props = withDefaults(
     modelValue?: Array<number | string>;
     size?: 'default' | 'large' | 'small';
   }>(),
-  { modelValue: () => [], isBtn: false },
+  { modelValue: () => [], isBtn: false, size: 'default' },
 );
 
 const emit = defineEmits<{

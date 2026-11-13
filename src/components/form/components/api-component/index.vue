@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import type { Component } from 'vue';
 
 import { computed, nextTick, ref, unref, useAttrs, watch } from 'vue';
@@ -24,7 +24,7 @@ export interface Props {
   component: Component;
   numberToString?: boolean;
   api?: ((arg?: any) => Promise<OptionsItem[] | Record<string, any>>) | string;
-  requestMethod?: 'get' | 'GET' | 'post' | 'POST';
+  requestMethod?: 'get' | 'post';
   params?: Record<string, any>;
   resultField?: string;
   labelField?: string;
@@ -127,14 +127,7 @@ async function fetchApi() {
   let funApi = api;
   if (api && typeof api === 'string') {
     funApi = (params: any) => {
-      const method = props.requestMethod.toLowerCase();
-      const request = (requestClient as any)[method];
-      if (typeof request !== 'function') {
-        throw new TypeError(
-          `Unsupported request method: ${props.requestMethod}`,
-        );
-      }
-      return request.call(requestClient, api, { params });
+      return (requestClient as any)[props.requestMethod](api, { params });
     };
   }
   if (!funApi || typeof funApi !== 'function') {
@@ -207,8 +200,8 @@ function isEqual(a: any, b: any): boolean {
     return a.getTime() === b.getTime();
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false;
-    for (const [index, item] of a.entries()) {
-      if (!isEqual(item, b[index])) return false;
+    for (const [i, item] of a.entries()) {
+      if (!isEqual(item, b[i])) return false;
     }
     return true;
   }
@@ -238,11 +231,12 @@ function cloneDeep(obj: any): any {
 }
 
 function getDeep(obj: any, path: string) {
-  let value = obj;
-  for (const key of path.split('.')) {
-    value = value === null || value === undefined ? undefined : value[key];
+  let current: any = obj;
+  for (const k of path.split('.')) {
+    if (current === null || current === undefined) return undefined;
+    current = current[k];
   }
-  return value;
+  return current;
 }
 
 watch(
@@ -254,7 +248,7 @@ watch(
   { deep: true, immediate: props.immediate },
 );
 
-async function emitChange() {
+function emitChange() {
   if (
     modelValue.value === undefined &&
     props.autoSelect &&
@@ -284,20 +278,6 @@ async function emitChange() {
     if (firstOption) modelValue.value = firstOption.value;
   }
   emit('optionsChange', unref(getOptions));
-
-  // 异步 options 加载完成后，若当前已有选中值（如编辑回填），
-  // 部分 element-plus 组件（ElTreeSelect）不会用新数据重新解析 label，
-  // 这里通过“先置空再还原”强制触发一次匹配，确保回填正确回显。
-  if (
-    modelValue.value !== undefined &&
-    modelValue.value !== null &&
-    modelValue.value !== ''
-  ) {
-    const cached = modelValue.value;
-    modelValue.value = undefined;
-    await nextTick();
-    modelValue.value = cached;
-  }
 }
 
 const componentRef = ref();

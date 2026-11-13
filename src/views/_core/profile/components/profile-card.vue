@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import { ElTag } from 'element-plus';
+import { useUserStore } from '#/core/stores';
 
 import Avatar from '#/components/form/components/avatar/index.vue';
 import { Icon } from '#/components/icon';
-import { useUserStore } from '#/core/stores';
 import { $t } from '#/locales';
-import { formatDate } from '#/utils';
 
 const emit = defineEmits<{
   avatarSuccess: [url: string];
@@ -20,11 +18,6 @@ const userInfo = computed(
 );
 
 const avatarUrl = computed(() => (userInfo.value?.avatar as string) || '');
-
-function formatDepts(depts: any[] | undefined): string {
-  if (!depts || depts.length === 0) return '—';
-  return depts.map((d: any) => d.name).join('，');
-}
 
 const sexLabel = computed(() => {
   const s = userInfo.value?.sex;
@@ -42,12 +35,6 @@ const sexLabel = computed(() => {
     };
   return null;
 });
-
-function formatTime(val: null | number | string | undefined): string {
-  if (!val) return '';
-  const timestamp = typeof val === 'number' && val < 1e12 ? val * 1000 : val;
-  return formatDate(timestamp) || '';
-}
 
 function handleAvatarSuccess(newUrl: string) {
   emit('avatarSuccess', newUrl);
@@ -76,12 +63,7 @@ function handleAvatarSuccess(newUrl: string) {
         </div>
 
         <h2 class="mt-4 text-xl font-normal text-gray-800 dark:text-gray-100">
-          {{
-            userInfo?.real_name ||
-            userInfo?.realName ||
-            userInfo?.username ||
-            ''
-          }}
+          {{ userInfo?.real_name || userInfo?.username || '' }}
           <Icon
             v-if="sexLabel"
             :icon="sexLabel.icon"
@@ -93,7 +75,7 @@ function handleAvatarSuccess(newUrl: string) {
           }}</span>
         </h2>
         <p class="mt-1 text-sm text-gray-400">
-          @{{ userInfo?.user_name || userInfo?.username || '' }}
+          @{{ userInfo?.user_name || '' }}
           <template v-if="userInfo?.nick_name">
             <span class="mx-1 text-gray-300">·</span>
             <span>{{ userInfo.nick_name }}</span>
@@ -111,8 +93,7 @@ function handleAvatarSuccess(newUrl: string) {
             />
             <span
               class="ml-2.5 text-sm text-gray-600 dark:text-gray-300 truncate"
-              >{{ userInfo?.email || $t('system.profile.card.not_set') }}</span
-            >
+              >{{ userInfo?.email || $t('system.profile.card.not_set') }}</span>
           </div>
           <div class="flex items-center">
             <Icon
@@ -131,62 +112,6 @@ function handleAvatarSuccess(newUrl: string) {
             <span class="ml-2.5 text-sm text-gray-600 dark:text-gray-300">{{
               userInfo.address
             }}</span>
-          </div>
-          <div class="flex items-center">
-            <Icon
-              icon="ant-design:cluster-outlined"
-              class="text-gray-400 shrink-0 text-base"
-            />
-            <span class="ml-2.5 text-sm text-gray-600 dark:text-gray-300">{{
-              formatDepts(userInfo?.depts)
-            }}</span>
-          </div>
-          <div class="flex items-start">
-            <Icon
-              icon="ant-design:safety-certificate-outlined"
-              class="mt-0.5 text-gray-400 shrink-0 text-base"
-            />
-            <div class="ml-2.5 flex flex-wrap gap-1">
-              <ElTag
-                v-for="role in userInfo?.roles || []"
-                :key="role.id"
-                size="small"
-                effect="plain"
-              >
-                {{ role.name }}
-              </ElTag>
-              <span
-                v-if="!userInfo?.roles?.length"
-                class="text-sm text-gray-400"
-                >—</span
-              >
-            </div>
-          </div>
-          <div class="flex items-center">
-            <Icon
-              icon="ant-design:clock-circle-outlined"
-              class="text-gray-400 shrink-0 text-base"
-            />
-            <span class="ml-2.5 text-sm text-gray-600 dark:text-gray-300"
-              >{{ $t('system.profile.card.create_time') }}:
-              {{
-                formatTime(userInfo?.create_time || userInfo?.created_at) ||
-                $t('system.profile.card.unknown')
-              }}</span
-            >
-          </div>
-          <div class="flex items-center">
-            <Icon
-              icon="ant-design:login-outlined"
-              class="text-gray-400 shrink-0 text-base"
-            />
-            <span class="ml-2.5 text-sm text-gray-600 dark:text-gray-300"
-              >{{ $t('system.profile.card.last_login') }}:
-              {{
-                formatTime(userInfo?.last_login_time || userInfo?.login_time) ||
-                $t('system.profile.card.unknown')
-              }}</span
-            >
           </div>
         </div>
       </div>
@@ -237,7 +162,7 @@ function handleAvatarSuccess(newUrl: string) {
   width: 80px;
   height: 80px;
   overflow: hidden;
-  background: var(--el-bg-color-overlay);
+  background: #fff;
   border-radius: 50%;
 }
 </style>

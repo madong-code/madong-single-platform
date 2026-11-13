@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import { ElButton, ElLoading, ElMessage } from 'element-plus';
 
 import { useVbenForm, z } from '#/adapter/form';
-import { ProfileService } from '#/api/auth/profile';
+import { changePasswordApi } from '#/api';
 import { Icon } from '#/components/icon';
 import { Page } from '#/components/page';
 import { $t } from '#/locales';
@@ -106,10 +106,9 @@ async function handleSave() {
   });
 
   try {
-    await ProfileService.updatePassword({
+    await changePasswordApi({
       old_password: values.oldPassword,
       new_password: values.newPassword,
-      confirm_password: values.confirmPassword,
     });
 
     let seconds = 5;

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-/** 版本更新日志对话框 — 100% 移植自 madong-vue upgrade-log */
+/** 版本更新日志对话框 */
 import { ref, watch } from 'vue';
+
+import { formatDate } from '#/core/shared';
 
 import {
   ElCollapse,
@@ -19,7 +21,6 @@ import { $t } from '#/locales';
 defineOptions({ name: 'UpgradeLog' });
 
 const props = defineProps<{ moduleCode?: string; moduleId?: number }>();
-
 const emit = defineEmits<{ close: [] }>();
 
 const [Dialog, dialogApi] = useDialog({
@@ -60,14 +61,6 @@ const fetchVersionList = async (code?: string) => {
   } finally {
     loading.value = false;
   }
-};
-
-const formatTimestamp = (timestamp: string) => {
-  if (!timestamp) return ['', ''];
-  const [date, time] = timestamp.split(' ');
-  if (!time) return [date, ''];
-  const [hours, minutes] = time.split(':');
-  return [date, `${hours}:${minutes}`];
 };
 
 const openDialog = async (mod?: any) => {
@@ -115,27 +108,24 @@ defineExpose({ openDialog });
             >
               <div class="relative">
                 <span class="text-[#333333] text-[14px] absolute">{{
-                  formatTimestamp(item.release_time)[0]
-                }}</span>
-                <br />
+                  formatDate(item.release_time, 'YYYY-MM-DD')
+                }}</span><br />
                 <span
                   class="text-[#999999] text-[14px] w-[78px] block mt-[10px] absolute text-right"
-                  >{{ formatTimestamp(item.release_time)[1] }}</span>
+                  >{{ formatDate(item.release_time, 'HH:mm') }}</span>
               </div>
               <ElCollapse v-model="activeName" accordion>
                 <ElCollapseItem :name="index">
                   <template #title>
-                    <span class="text-[#333] text-[14px]">
-                      v{{ item.version_no }}
-                      <ElTag
+                    <span class="text-[#333] text-[14px]">v{{ item.version_no
+                      }}<ElTag
                         v-if="item.is_important"
                         type="primary"
                         size="small"
                         class="ml-2"
                         >{{
                           $t('app.plugin.market.upgrade_log.important')
-                        }}</ElTag>
-                    </span>
+                        }}</ElTag></span>
                   </template>
                   <div
                     class="px-[20px] py-[20px] bg-overlay timeline-log-wrap whitespace-pre-wrap rounded-[4px]"
@@ -199,10 +189,7 @@ defineExpose({ openDialog });
   border-bottom: solid 1px #e4e7ed;
 }
 
-:deep(.el-dialog__headerbtn .el-dialog__close) {
-  color: #666;
-}
-
+:deep(.el-dialog__headerbtn .el-dialog__close),
 :deep(.el-dialog__headerbtn:hover .el-dialog__close) {
   color: #666;
 }
@@ -240,7 +227,6 @@ defineExpose({ openDialog });
   height: 18px !important;
 }
 </style>
-
 <style>
 .time-dialog .el-dialog {
   top: 10%;

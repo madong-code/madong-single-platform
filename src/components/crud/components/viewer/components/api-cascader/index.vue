@@ -16,17 +16,10 @@ const labelField = computed(() => props.labelField || 'label');
 const valueField = computed(() => props.valueField || 'value');
 
 const displayValue = computed(() => {
-  if (
-    options.value.length === 0 ||
-    props.value === null ||
-    props.value === undefined
-  )
-    return null;
+  if (options.value.length === 0 || props.value == null) return null;
   const vals = Array.isArray(props.value) ? props.value : [props.value];
   const names = vals.map((v) => {
-    const opt = options.value.find(
-      (o: any) => String(o[valueField.value]) === String(v),
-    );
+    const opt = options.value.find((o: any) => o[valueField.value] == v);
     return opt ? opt[labelField.value] : v;
   });
   return names.join('/');

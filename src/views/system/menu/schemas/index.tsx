@@ -1,6 +1,6 @@
 import type { CrudSchema } from '#/components/crud/components/types';
 
-import { MenuService } from '#/api/system';
+import { PlatformMenuService } from '#/api/system/platform-menu';
 import { Icon } from '#/components/icon';
 import { DictEnum } from '#/enums';
 import { $t } from '#/locales';
@@ -42,40 +42,30 @@ function arrayToTree(
 export const useCrudSchema = (): CrudSchema => {
   return {
     crudApi: {
-      list: MenuService.list,
-      add: MenuService.create,
-      edit: MenuService.update,
-      remove: MenuService.delete,
-      batchRemove: MenuService.remove,
-      view: MenuService.get,
+      list: PlatformMenuService.list,
+      add: PlatformMenuService.create,
+      edit: PlatformMenuService.update,
+      remove: PlatformMenuService.delete,
     },
 
-    // ========== 扁平化表格配置 ==========
     rowKey: 'id',
     hasAdd: true,
     hasEdit: true,
-    hasView: true,
+    hasView: false,
     hasRemove: true,
-    hasBatchRemove: true,
-    permissions: {
-      add: 'system:menu:create',
-      edit: 'system:menu:update',
-      remove: 'system:menu:delete',
-      view: 'system:menu:read',
-    },
-    tree: { id: 'id', pid: 'pid', children: 'children', reserve: true },
+    hasBatchRemove: false,
+    tree: { id: 'id', pid: 'pid', children: 'children' },
     beforeFetch: (params: any) => {
-      return { ...params, page: 1, limit: 999 };
+      return params;
     },
-    afterFetch: (res: { items?: any[]; total?: number }) => {
-      const items = res?.items || [];
+    afterFetch: (res: any) => {
+      const items = Array.isArray(res) ? res : res?.items || [];
       return {
         items: arrayToTree(items),
-        total: res?.total ?? items.length,
+        total: items.length,
       };
     },
     columns: [
-      { type: 'checkbox', width: 60 },
       {
         field: 'id',
         title: $t('system.menu.table.columns.id'),
@@ -175,18 +165,6 @@ export const useCrudSchema = (): CrudSchema => {
           },
         },
         {
-          component: 'ApiSelect',
-          fieldName: 'EQ_app',
-          label: $t('system.menu.form.modal.app'),
-          defaultValue: 'admin',
-          componentProps: {
-            api: '/system/menu/app/list',
-            requestMethod: 'GET',
-            placeholder: $t('system.menu.form.placeholder.app'),
-            clearable: true,
-          },
-        },
-        {
           component: 'Input',
           fieldName: 'LIKE_title',
           label: $t('system.menu.table.search.title'),
@@ -218,7 +196,6 @@ export const useCrudSchema = (): CrudSchema => {
 
     formDialog: {
       enabled: true,
-      title: $t('system.menu.title'),
       width: 'w-[60%]',
       dialogType: 'drawer',
       wrapperClass: 'grid-cols-2',
@@ -228,7 +205,7 @@ export const useCrudSchema = (): CrudSchema => {
       },
       schema: [
         {
-          label: $t('system.menu.form.modal.id'),
+          label: $t('system.menu.table.columns.id'),
           fieldName: 'id',
           component: 'Input',
           formItemClass: 'col-span-2',
@@ -244,41 +221,11 @@ export const useCrudSchema = (): CrudSchema => {
           defaultValue: 1,
           formItemClass: 'col-span-2',
           rules: 'required',
-          componentProps: (_value) => {
-            return {
-              placeholder: $t('system.menu.form.placeholder.type'),
-              code: DictEnum.SYS_MENU_TYPE,
-              isBtn: true,
-              renderType: 'RadioGroup',
-              onChange: (val: any) => {
-                if (val !== 2) {
-                  _value.openType = 0;
-                }
-              },
-            };
-          },
-        },
-        {
-          label: $t('system.menu.form.modal.app'),
-          fieldName: 'app',
-          component: 'ApiTreeSelect',
-          defaultValue: 'admin',
-          formItemClass: 'col-span-2',
-          rules: 'required',
-          componentProps: (_value) => {
-            return {
-              api: '/system/menu/app/list',
-              requestMethod: 'get',
-              placeholder: $t('system.menu.form.placeholder.app'),
-              style: {
-                width: '330px',
-              },
-              labelField: 'label',
-              valueField: 'value',
-              onChange: (_values: any) => {
-                _value.pid = '';
-              },
-            };
+          componentProps: {
+            placeholder: $t('system.menu.form.placeholder.type'),
+            code: DictEnum.SYS_MENU_TYPE,
+            isBtn: true,
+            renderType: 'RadioGroup',
           },
         },
         {
@@ -286,21 +233,14 @@ export const useCrudSchema = (): CrudSchema => {
           fieldName: 'pid',
           component: 'ApiTreeSelect',
           formItemClass: 'col-span-1',
-          componentProps: (_value) => {
-            return {
-              placeholder: $t('system.menu.form.placeholder.pid'),
-              clearable: true,
-              disabled: !_value?.app,
-              checkStrictly: true,
-              api: '/system/menu',
-              requestMethod: 'get',
-              params: {
-                format: 'tree',
-                app: _value.app || 'admin',
-              },
-              labelField: 'name',
-              valueField: 'id',
-            };
+          componentProps: {
+            placeholder: $t('system.menu.form.placeholder.pid'),
+            clearable: true,
+            checkStrictly: true,
+            api: '/platform-menu/tree',
+            requestMethod: 'get',
+            labelField: 'title',
+            valueField: 'id',
           },
         },
         {
@@ -331,7 +271,7 @@ export const useCrudSchema = (): CrudSchema => {
           component: 'Input',
           formItemClass: 'col-span-1',
           help: $t('system.menu.form.help.path'),
-          componentProps: (values) => {
+          componentProps: (values: any) => {
             return {
               placeholder: $t('system.menu.form.placeholder.path'),
               clearable: true,
@@ -344,7 +284,7 @@ export const useCrudSchema = (): CrudSchema => {
           fieldName: 'component',
           component: 'Input',
           formItemClass: 'col-span-1',
-          componentProps: (values) => {
+          componentProps: (values: any) => {
             return {
               placeholder: $t('system.menu.form.placeholder.component'),
               clearable: true,
@@ -354,16 +294,12 @@ export const useCrudSchema = (): CrudSchema => {
         },
         {
           label: $t('system.menu.form.modal.open_type'),
-          fieldName: 'openType',
+          fieldName: 'open_type',
           component: 'ApiDict',
           defaultValue: 1,
           formItemClass: 'col-span-1',
           rules: 'required',
-          dependencies: {
-            triggerFields: ['type'],
-            rules: (value: any) => (value.type === 2 ? 'required' : null),
-          },
-          componentProps: (values) => {
+          componentProps: (values: any) => {
             return {
               placeholder: $t('system.menu.form.placeholder.open_type'),
               code: DictEnum.SYS_MENU_OPEN_TYPE,
@@ -378,7 +314,7 @@ export const useCrudSchema = (): CrudSchema => {
           fieldName: 'icon',
           component: 'IconPicker',
           formItemClass: 'col-span-1',
-          componentProps: (values) => {
+          componentProps: (values: any) => {
             return {
               class: 'w-full',
               placeholder: $t('system.menu.form.placeholder.icon'),
@@ -389,21 +325,21 @@ export const useCrudSchema = (): CrudSchema => {
         },
         {
           label: $t('system.menu.form.modal.link_url'),
-          fieldName: 'url',
+          fieldName: 'link_url',
           component: 'Input',
           formItemClass: 'col-span-1',
           help: $t('system.menu.form.help.link_url'),
-          componentProps: (values) => {
+          componentProps: (values: any) => {
             return {
               placeholder: $t('system.menu.form.placeholder.link_url'),
               clearable: true,
-              disabled: ![2, 3].includes(values.openType),
+              disabled: values.type !== 2,
             };
           },
         },
         {
-          label: $t('system.menu.form.modal.sort'),
           fieldName: 'sort',
+          label: $t('system.menu.form.modal.sort'),
           component: 'InputNumber',
           formItemClass: 'col-span-1',
           defaultValue: 999,
@@ -421,18 +357,18 @@ export const useCrudSchema = (): CrudSchema => {
           formItemClass: 'col-span-1',
           componentProps: {
             placeholder: $t('system.menu.form.placeholder.enabled'),
-            code: DictEnum.SYS_ENABLED_STATUS,
+            code: DictEnum.SYS_YES_NO,
             isBtn: true,
             renderType: 'RadioGroup',
           },
         },
         {
           label: $t('system.menu.form.modal.is_show'),
-          fieldName: 'isShow',
+          fieldName: 'is_show',
           component: 'ApiDict',
           defaultValue: 1,
           formItemClass: 'col-span-1',
-          componentProps: (values) => {
+          componentProps: (values: any) => {
             return {
               placeholder: $t('system.menu.form.placeholder.is_show'),
               code: DictEnum.SYS_YES_NO,
@@ -444,7 +380,7 @@ export const useCrudSchema = (): CrudSchema => {
         },
         {
           label: $t('system.menu.form.modal.is_sync'),
-          fieldName: 'isSync',
+          fieldName: 'is_sync',
           component: 'ApiDict',
           defaultValue: 0,
           formItemClass: 'col-span-1',
@@ -457,11 +393,11 @@ export const useCrudSchema = (): CrudSchema => {
         },
         {
           label: $t('system.menu.form.modal.is_cache'),
-          fieldName: 'isCache',
+          fieldName: 'is_cache',
           component: 'ApiDict',
           defaultValue: 0,
           formItemClass: 'col-span-1',
-          componentProps: (values) => {
+          componentProps: (values: any) => {
             return {
               placeholder: $t('system.menu.form.placeholder.is_cache'),
               code: DictEnum.SYS_YES_NO,
@@ -469,6 +405,32 @@ export const useCrudSchema = (): CrudSchema => {
               renderType: 'RadioGroup',
               disabled: ![1, 2].includes(values.type),
             };
+          },
+        },
+        {
+          label: $t('system.menu.form.modal.is_affix'),
+          fieldName: 'is_affix',
+          component: 'ApiDict',
+          defaultValue: 0,
+          formItemClass: 'col-span-1',
+          componentProps: {
+            placeholder: $t('system.menu.form.placeholder.is_affix'),
+            code: DictEnum.SYS_YES_NO,
+            isBtn: true,
+            renderType: 'RadioGroup',
+          },
+        },
+        {
+          label: $t('system.menu.form.modal.is_tab'),
+          fieldName: 'is_tab',
+          component: 'ApiDict',
+          defaultValue: 1,
+          formItemClass: 'col-span-1',
+          componentProps: {
+            placeholder: $t('system.menu.form.placeholder.is_tab'),
+            code: DictEnum.SYS_YES_NO,
+            isBtn: true,
+            renderType: 'RadioGroup',
           },
         },
       ],

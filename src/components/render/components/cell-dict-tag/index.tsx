@@ -57,7 +57,7 @@ const DictTagInner = defineComponent({
     };
 
     const currentItem = () =>
-      options.value.find((item) => String(item.value) === String(props.value));
+      options.value.find((item) => item.value === props.value);
     const label = () => currentItem()?.label ?? String(props.value ?? '');
 
     const getTagStyle = () => {

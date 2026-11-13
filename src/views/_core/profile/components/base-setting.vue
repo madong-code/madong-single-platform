@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
+import { useUserStore } from '#/core/stores';
+
 import { ElButton, ElMessage, ElMessageBox } from 'element-plus';
 
 import { useVbenForm, z } from '#/adapter/form';
-import { ProfileService } from '#/api/auth/profile';
+import { getUserInfoApi, updateUserInfoApi } from '#/api';
 import { Icon } from '#/components/icon';
 import { Page } from '#/components/page';
-import { useUserStore } from '#/core/stores';
 import { $t } from '#/locales';
 
 const userStore = useUserStore();
@@ -133,7 +134,7 @@ function setFieldsDisabled(disabled: boolean) {
 
 async function loadProfile() {
   try {
-    const resp = (await ProfileService.getProfile()) as Record<string, any>;
+    const resp = (await getUserInfoApi()) as Record<string, any>;
     await formApi.setValues({
       real_name: resp.real_name || '',
       nick_name: resp.nick_name || '',
@@ -171,10 +172,10 @@ async function handleSave() {
 
     loading.value = true;
     const values = await formApi.getValues();
-    await ProfileService.updateProfile(values as any);
+    await updateUserInfoApi(values as any);
 
-    const newUser = (await ProfileService.getProfile()) as any;
-    userStore.setUserInfo(newUser);
+    const newUser = (await getUserInfoApi()) as Record<string, any>;
+    userStore.setUserInfo(newUser as any);
 
     ElMessage.success($t('system.profile.setting.success'));
     isEdit.value = false;

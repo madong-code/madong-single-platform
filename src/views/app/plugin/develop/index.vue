@@ -1,33 +1,15 @@
 <script setup lang="ts">
-/** 插件开发：仅平台运营端可用，非平台账号打开返回 403 未授权 */
-import { onMounted, ref } from 'vue';
-
+/** 插件开发：平台默认顶级管理员单一模式，始终可用 */
 import { ElMessageBox } from 'element-plus';
 
 import { useCrud } from '#/adapter/crud';
 import { AppPluginDevelopService } from '#/api/app/plugin/develop';
-import { requestClient } from '#/api/request';
 import { Page } from '#/components/page';
-import { Fallback } from '#/core/ui/common';
 import { $t } from '#/locales';
 
 import { useCrudSchema } from './schemas';
 
 defineOptions({ name: 'AppPluginDevelop' });
-
-const mode = ref<string>('standalone');
-const loading = ref(true);
-
-onMounted(async () => {
-  try {
-    const res: any = await requestClient.get('/site/mode');
-    mode.value = res?.mode || 'standalone';
-  } catch {
-    mode.value = 'standalone';
-  } finally {
-    loading.value = false;
-  }
-});
 
 const [BasicCrud] = useCrud({
   ...useCrudSchema(),
@@ -38,7 +20,7 @@ const [BasicCrud] = useCrud({
     {
       label: $t('app.plugin.develop.action.package'),
       icon: 'ant-design:download-outlined',
-      auth: 'plugin:develop:build',
+      auth: 'platform:plugin:develop:build',
       onClick: async (_e: Event, row: any) => {
         try {
           await ElMessageBox.confirm(
@@ -90,9 +72,8 @@ const [BasicCrud] = useCrud({
 </script>
 
 <template>
-  <div v-loading="loading" class="h-full">
-    <Fallback v-if="mode === 'saas'" status="403" />
-    <Page v-else-if="!loading" auto-content-height>
+  <div class="h-full">
+    <Page auto-content-height>
       <template #header>
         <div class="mb-4">
           <h2 class="text-xl font-bold text-gray-800">插件开发</h2>

@@ -41,7 +41,7 @@ export const useCrudSchema = (): CrudSchema => {
       {
         field: 'title',
         title: $t('ops.crontab.table.columns.title'),
-        minWidth: 150,
+        minWidth: 120,
         align: 'left',
       },
       {
@@ -85,8 +85,8 @@ export const useCrudSchema = (): CrudSchema => {
       {
         field: 'enabled',
         title: $t('ops.crontab.table.columns.enabled'),
-        align: 'center',
         width: 70,
+        align: 'center',
         cellRender: {
           name: 'CellDictTag',
           attrs: { code: DictEnum.SYS_ENABLED_STATUS },
@@ -108,6 +108,19 @@ export const useCrudSchema = (): CrudSchema => {
               if (s.startsWith('plugin:')) return `插件(${s.slice(7)})`;
               return s;
             },
+          },
+        },
+      },
+      {
+        field: 'tenant_id',
+        title: $t('ops.crontab.table.columns.tenant_id'),
+        minWidth: 120,
+        align: 'left',
+        visible: false,
+        // 关联租户对象：有则显示租户名称，无（全局任务 tenant=null）显示 -
+        vxeColumn: {
+          slots: {
+            default: ({ row }: { row: any }) => row?.tenant?.name ?? '-',
           },
         },
       },

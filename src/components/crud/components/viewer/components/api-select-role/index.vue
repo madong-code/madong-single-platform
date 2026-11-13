@@ -11,6 +11,10 @@ const props = withDefaults(
   }>(),
   {
     rowKey: 'id',
+    data: () => ({}),
+    fieldName: '',
+    schema: undefined,
+    value: null,
   },
 );
 
@@ -19,12 +23,7 @@ const loading = ref(false);
 
 const displayValue = computed(() => {
   if (loading.value) return undefined;
-  if (
-    nameMap.value.size === 0 ||
-    props.value === null ||
-    props.value === undefined ||
-    props.value === ''
-  )
+  if (nameMap.value.size === 0 || props.value == null || props.value === '')
     return '--';
   const vals = Array.isArray(props.value)
     ? props.value.map(String)

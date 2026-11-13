@@ -243,9 +243,6 @@ export const useTerminalStore = defineStore(
       startTask();
     }
 
-    /**
-     * 通过UUID查找任务索引
-     */
     function findTaskIdxFromUuid(uuid: string): false | number {
       for (const key in state.taskList) {
         const item = state.taskList[key];
@@ -256,9 +253,6 @@ export const useTerminalStore = defineStore(
       return false;
     }
 
-    /**
-     * 保持任务日志滚动条在底部
-     */
     function execMessageScrollbarKeep(uuid: string) {
       const el = document.querySelector(`.exec-message-${uuid}`);
       if (el && (el as HTMLElement).scrollHeight) {
@@ -307,7 +301,6 @@ export const useTerminalStore = defineStore(
         taskUuid,
         extend,
         {
-          // 进度事件 - 处理所有执行过程中的消息
           progress: (payload: any) => {
             try {
               const taskIdx = findTaskIdxFromUuid(payload.uuid);
@@ -316,18 +309,15 @@ export const useTerminalStore = defineStore(
                 return;
               }
 
-              // Sse::progress 返回: { status, message, progress, data }
               const sseData = payload.data || {};
               const innerData = sseData.data || {};
               const stage = innerData.stage || 'output';
               const message = sseData.message || '';
 
-              // 根据阶段更新任务状态
               if (stage === 'connected') {
                 setTaskStatus(taskIdx, TerminalTaskStatus.Executing);
               }
 
-              // 添加消息到日志
               if (message) {
                 addTaskMessage(taskIdx, `\n${message}`);
               }
@@ -336,7 +326,6 @@ export const useTerminalStore = defineStore(
             }
           },
 
-          // 完成事件 - 命令执行完成
           completed: (payload: any) => {
             try {
               const taskIdx = findTaskIdxFromUuid(payload.uuid);
@@ -346,7 +335,6 @@ export const useTerminalStore = defineStore(
                 return;
               }
 
-              // Sse::completed 返回: { status, message, data: { success, ... } }
               const sseData = payload.data || {};
               const innerData = sseData.data || {};
               const success = innerData.success === true;
@@ -371,7 +359,6 @@ export const useTerminalStore = defineStore(
             }
           },
 
-          // 错误事件 - 服务器发送的错误
           error: (payload: any) => {
             try {
               const taskIdx = findTaskIdxFromUuid(payload.uuid);
@@ -396,14 +383,12 @@ export const useTerminalStore = defineStore(
             }
           },
 
-          // 连接错误 - EventSource 连接失败
           onError: () => {
             console.error('SSE connection error for command:', command);
             sseConnection?.close();
             const taskIdx = findTaskIdxFromUuid(taskUuid);
             const taskItem =
               taskIdx === false ? undefined : state.taskList[taskIdx];
-            // 只有任务仍在执行中才标记失败（completed 后 close 触发的 error 忽略）
             if (
               taskItem &&
               (taskItem.status === TerminalTaskStatus.Connecting ||
@@ -417,7 +402,6 @@ export const useTerminalStore = defineStore(
             }
           },
 
-          // 连接打开
           open: () => {
             console.warn('SSE connection opened for command:', command);
           },

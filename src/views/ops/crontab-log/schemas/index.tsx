@@ -19,7 +19,10 @@ export const useCrudSchema = (crontab_id?: number | string): CrudSchema => {
     hasEdit: false,
     hasView: false,
     hasRemove: true,
+    hasBatchRemove: true,
     permissions: {
+      add: 'crontab:log:create',
+      edit: 'crontab:log:update',
       remove: 'crontab:log:delete',
       view: 'crontab:log:read',
     },
@@ -30,7 +33,7 @@ export const useCrudSchema = (crontab_id?: number | string): CrudSchema => {
       };
     },
     columns: [
-      { type: 'checkbox', width: 60 },
+      { type: 'checkbox', width: 60, align: 'center' },
       {
         field: 'target',
         title: $t('ops.crontab.log.table.columns.target'),
@@ -47,8 +50,11 @@ export const useCrudSchema = (crontab_id?: number | string): CrudSchema => {
         field: 'return_code',
         title: $t('ops.crontab.log.table.columns.return_code'),
         minWidth: 100,
-        viewComponent: 'CellDictTag',
-        viewComponentProps: { code: DictEnum.SYS_OPERATION_RESULT },
+        align: 'left',
+        cellRender: {
+          name: 'CellDictTag',
+          attrs: { code: DictEnum.SYS_OPERATION_RESULT },
+        },
       },
       {
         field: 'log',
@@ -84,7 +90,6 @@ export const useCrudSchema = (crontab_id?: number | string): CrudSchema => {
         },
       ],
     },
-    // 启用 formDialog 以暴露「勾选批量删除 / 行删除」按钮（本页无新增/编辑表单，schema 为空，不会弹出表单）
     formDialog: { enabled: true, schema: [] },
   };
 };

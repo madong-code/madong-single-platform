@@ -20,6 +20,12 @@ const props = withDefaults(
     multiple: false,
     labelField: 'label',
     valueField: 'value',
+    code: '',
+    data: () => ({}),
+    fieldName: '',
+    options: () => [],
+    schema: undefined,
+    value: undefined,
   },
 );
 

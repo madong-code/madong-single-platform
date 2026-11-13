@@ -4,8 +4,8 @@
  * 私有空间（非公开读）下，资源不能由前端自行拼接访问地址，
  * 必须按「资源 key + 用户身份」向后端换取带签名的临时直链：
  *
- *   前端 → POST /system/files/access-urls（keys）
- *        → 后端校验身份并生成七牛私有签名 URL
+ *   前端 → POST /platformapi/file/access-urls（keys）
+ *        → 后端校验身份并生成私有签名 URL
  *        → 前端 <img src="签名地址">
  *
  * 公开空间不发起任何请求，仍由调用方直接拼接访问域名。
@@ -83,11 +83,15 @@ export const isStorageResource = (path: string): boolean => {
   if (/^(https?:)?\/\//i.test(trimmed)) {
     const host = hostOf(trimmed);
     const ownHost = hostOf(String(siteConfig().cdn_url || ''));
-    return host !== '' && ownHost !== '' && host.toLowerCase() === ownHost.toLowerCase();
+    return (
+      host !== '' && ownHost !== '' && host.toLowerCase() === ownHost.toLowerCase()
+    );
   }
 
-  const prefix = String(siteConfig().storage_prefix || '')
-    .replace(/^\/+|\/+$/g, '');
+  const prefix = String(siteConfig().storage_prefix || '').replaceAll(
+    /^\/+|\/+$/g,
+    '',
+  );
   if (prefix === '') return false;
   return trimmed.replace(/^\/+/, '').startsWith(`${prefix}/`);
 };
@@ -97,13 +101,16 @@ const fetchSignedUrls = async (keys: string[]): Promise<void> => {
   keys.forEach((key) => lastAttemptAt.set(key, Date.now()));
   try {
     const list: any = await FilesService.accessUrls(keys);
-    const items: { key: string; url: string }[] = Array.isArray(list) ? list : [];
+    const items: { key: string; url: string }[] = Array.isArray(list)
+      ? list
+      : [];
 
     const next = { ...signedUrls.value };
     let changed = false;
     const resolved = new Set<string>();
     for (const item of items) {
-      if (!item?.key || typeof item.url !== 'string' || item.url === '') continue;
+      if (!item?.key || typeof item.url !== 'string' || item.url === '')
+        continue;
       resolved.add(item.key);
       if (next[item.key] !== item.url) {
         next[item.key] = item.url;
@@ -163,24 +170,6 @@ export const resolveSignedUrl = (path: string): null | string => {
   const lastAt = lastAttemptAt.get(trimmed) ?? 0;
   if (Date.now() - lastAt >= RETRY_INTERVAL) enqueue(trimmed);
   return null;
-};
-
-/**
- * 私有资源是否处于「占位」状态
- *
- * 私有空间下 buildStaticUrl 在签名未就绪时会回落到拼接地址，浏览器随即对
- * 私有空间发起一次必然失败的裸链请求并留下破图。调用方据此先隐藏图片、
- * 保留品牌占位，签名缓存到齐后再渲染（signedUrls 是响应式的，会自动重算）。
- *
- * - 私有空间 + 本站存储资源 + 尚无签名地址 → true（换取失败也保持占位）
- * - 已有签名地址 / 公开空间 / 非本站存储资源 → false（按正常地址渲染）
- *
- * 与 template/web 的同名函数语义保持一致。
- */
-export const isPrivateResourcePending = (path: string): boolean => {
-  if (!isPrivateStorage() || !isStorageResource(path)) return false;
-  const trimmed = (path || '').trim();
-  return signedUrls.value[trimmed] === undefined;
 };
 
 /**

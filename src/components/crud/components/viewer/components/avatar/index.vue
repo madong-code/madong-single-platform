@@ -15,6 +15,10 @@ const props = withDefaults(
   {
     size: 102,
     shape: 'square',
+    data: () => ({}),
+    fieldName: '',
+    schema: undefined,
+    value: undefined,
   },
 );
 
@@ -24,12 +28,7 @@ const isShow = computed(
 </script>
 
 <template>
-  <ElAvatar
-    v-if="isShow"
-    :src="value ?? undefined"
-    :size="size"
-    :shape="shape"
-  />
+  <ElAvatar v-if="isShow" :src="value || undefined" :size="size" :shape="shape" />
   <span v-else class="empty-value">--</span>
 </template>
 

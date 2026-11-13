@@ -8,6 +8,9 @@ withDefaults(
   }>(),
   {
     value: '',
+    data: () => ({}),
+    fieldName: '',
+    schema: undefined,
   },
 );
 </script>

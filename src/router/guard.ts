@@ -1,16 +1,17 @@
 import type { Router } from 'vue-router';
 
-import { getAccessCodesApi } from '#/api';
-import { useMenuBadgePush } from '#/core/ui/menu/hooks';
-import { preferences } from '#/core/preferences';
-import { startProgress, stopProgress } from '#/core/shared';
 import { LOGIN_PATH } from '#/core/shared/constants';
+import { preferences } from '#/core/preferences';
 import { useAccessStore, useUserStore } from '#/core/stores';
+import { startProgress, stopProgress } from '#/core/shared';
+
+import { getAccessCodesApi } from '#/api';
+import { useMenuBadgePush } from '#/hooks/use-menu-badge-push';
 import { accessRoutes, coreRouteNames } from '#/router/routes';
 import { useAuthStore } from '#/store';
-
-import { extractBadgesFromMenus } from '#/core/utils/merge-menu-badges';
-import { useMenuBadgeStore } from '#/core/stores/modules/menu-badge';
+import { useMenuBadgeStore } from '#/store/modules/menu-badge';
+import { extractBadgesFromMenus } from '#/utils/menu-badge';
+import { startBadgeApplier } from '#/utils/menu-badge-applier';
 
 import { generateAccess } from './access';
 
@@ -98,12 +99,9 @@ function setupAccessGuard(router: Router) {
     // 当前登录用户拥有的角色标识列表
     const userInfo = userStore.userInfo || (await authStore.fetchUserInfo());
 
-    // 刷新页面时重新从后端获取最新权限码（若 authLogin 已预加载则跳过重复请求）
-    const accessCodes = accessStore.accessCodes;
-    if (!accessCodes || accessCodes.length === 0) {
-      const newAccessCodes = await getAccessCodesApi();
-      accessStore.setAccessCodes(newAccessCodes);
-    }
+    // 从后端获取最新权限码
+    const accessCodes = await getAccessCodesApi();
+    accessStore.setAccessCodes(accessCodes);
 
     const userRoles = userInfo.roles ?? [];
 
@@ -120,15 +118,11 @@ function setupAccessGuard(router: Router) {
     accessStore.setAccessRoutes(accessibleRoutes);
     accessStore.setIsAccessChecked(true);
 
-    // 从菜单数据中提取徽标信息，初始化 badge store
+    // 初始化菜单徽标：从菜单树提取静态徽标 → 订阅 WS 推送 → 启动实时写回
     const badgeStore = useMenuBadgeStore();
-    const badgeMap = extractBadgesFromMenus(accessibleMenus);
-    if (Object.keys(badgeMap).length > 0) {
-      badgeStore.initBadges(badgeMap);
-    }
-
-    // 初始化菜单徽标 WebSocket 推送
+    badgeStore.initBadges(extractBadgesFromMenus(accessibleMenus));
     useMenuBadgePush();
+    startBadgeApplier();
 
     const redirectPath = (from.query.redirect ??
       (to.path === preferences.app.defaultHomePath

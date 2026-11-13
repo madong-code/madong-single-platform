@@ -119,15 +119,15 @@ onMounted(() => {
 .category-tabs :deep(.el-tabs__nav-wrap::after) {
   display: none;
 }
+.view-mode-switch :deep(.el-radio-button__inner) {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
 .tab-label {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   font-weight: 500;
-}
-.view-mode-switch :deep(.el-radio-button__inner) {
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
 }
 </style>

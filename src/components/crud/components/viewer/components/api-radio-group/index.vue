@@ -14,6 +14,11 @@ const props = withDefaults(
   {
     labelField: 'label',
     valueField: 'value',
+    code: '',
+    data: () => ({}),
+    fieldName: '',
+    schema: undefined,
+    value: null,
   },
 );
 
@@ -22,14 +27,9 @@ const loading = ref(false);
 
 const displayValue = computed(() => {
   if (loading.value) return undefined;
-  if (
-    options.value.length === 0 ||
-    props.value === null ||
-    props.value === undefined
-  )
-    return undefined;
+  if (options.value.length === 0 || props.value == null) return undefined;
   const opt = options.value.find(
-    (o: any) => String(o[props.valueField]) === String(props.value),
+    (o: any) => o[props.valueField] == props.value,
   );
   return opt ? opt[props.labelField] : undefined;
 });

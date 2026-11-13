@@ -44,8 +44,8 @@ export default defineConfig(async (config) => {
   const useMock = (env.VITE_NITRO_MOCK ?? 'true') !== 'false';
   const apiProxy = useMock
     ? {
-        // mock 服务路径自带 /adminapi 前缀，无需 rewrite
-        '/adminapi': {
+        // mock 服务路径自带 /platformapi 前缀，无需 rewrite
+        '/platformapi': {
           changeOrigin: true,
           target: 'http://localhost:5320',
           ws: true,
@@ -63,10 +63,10 @@ export default defineConfig(async (config) => {
         },
       }
     : {
-        '/adminapi': {
+        '/platformapi': {
           changeOrigin: true,
-          rewrite: (path: string) => path.replace(/^\/adminapi/, ''),
-          target: 'http://127.0.0.1:8500/adminapi',
+          rewrite: (path: string) => path.replace(/^\/platformapi/, ''),
+          target: 'http://127.0.0.1:8500/platformapi',
           ws: true,
           // 无超时限制，支持大文件下载
           timeout: 0,

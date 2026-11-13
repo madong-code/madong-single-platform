@@ -44,8 +44,9 @@ defineExpose({
         v-for="item in options || []"
         :key="`${item.value}`"
         :value="item.value"
-        >{{ item.label }}</ElRadioButton
       >
+        {{ item.label }}
+      </ElRadioButton>
     </template>
     <template v-else>
       <ElRadio
@@ -53,8 +54,9 @@ defineExpose({
         v-for="item in options || []"
         :key="`${item.value}`"
         :value="item.value"
-        >{{ item.label }}</ElRadio
       >
+        {{ item.label }}
+      </ElRadio>
     </template>
   </ElRadioGroup>
 </template>

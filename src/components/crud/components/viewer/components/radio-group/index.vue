@@ -12,7 +12,13 @@ const props = withDefaults(
     schema?: any;
     value?: null | number | string | undefined;
   }>(),
-  {},
+  {
+    data: () => ({}),
+    fieldName: '',
+    options: () => [],
+    schema: undefined,
+    value: undefined,
+  },
 );
 
 const displayLabel = computed(() => {

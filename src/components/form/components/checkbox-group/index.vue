@@ -18,7 +18,7 @@ const props = withDefaults(
     options?: Option[];
     size?: 'default' | 'large' | 'small';
   }>(),
-  { modelValue: () => [], isBtn: false },
+  { modelValue: () => [], isBtn: false, options: () => [], size: 'default' },
 );
 
 const emit = defineEmits<{
@@ -45,8 +45,9 @@ defineExpose({
         v-for="item in options || []"
         :key="`${item.value}`"
         :value="item.value"
-        >{{ item.label }}</ElCheckboxButton
       >
+        {{ item.label }}
+      </ElCheckboxButton>
     </template>
     <template v-else>
       <ElCheckbox
@@ -54,8 +55,9 @@ defineExpose({
         v-for="item in options"
         :key="`${item.value}`"
         :value="item.value"
-        >{{ item.label }}</ElCheckbox
       >
+        {{ item.label }}
+      </ElCheckbox>
     </template>
   </ElCheckboxGroup>
 </template>

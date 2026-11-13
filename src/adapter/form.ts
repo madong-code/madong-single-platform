@@ -1,12 +1,12 @@
-import type { ComponentPropsMap, ComponentType } from './component';
-
 import type {
   VbenFormProps as FormProps,
   VbenFormSchema as FormSchema,
 } from '#/core/ui/common';
 
-import { $t } from '#/core/locales';
+import type { ComponentPropsMap, ComponentType } from './component';
+
 import { setupVbenForm, useVbenForm as useForm, z } from '#/core/ui/common';
+import { $t } from '#/core/locales';
 
 async function initSetupVbenForm() {
   setupVbenForm<ComponentType>({
@@ -43,13 +43,13 @@ type BaseFormSchema = FormSchema<ComponentType, ComponentPropsMap>;
  * 扩展 VbenFormSchema，增加 viewComponent 和 viewComponentProps
  * 用于 DetailView 详情展示
  */
-export type VbenFormSchema = {
-  /** 在详情模式下隐藏该字段 */
-  hideInDetail?: boolean;
+export type VbenFormSchema = BaseFormSchema & {
   /** 详情模式使用的展示组件名称 */
   viewComponent?: string;
   /** 详情模式展示组件的参数 */
   viewComponentProps?: Record<string, any>;
-} & BaseFormSchema;
+  /** 在详情模式下隐藏该字段 */
+  hideInDetail?: boolean;
+};
 
 export type VbenFormProps = FormProps<ComponentType, ComponentPropsMap>;

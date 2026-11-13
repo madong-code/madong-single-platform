@@ -1,6 +1,6 @@
 <script setup lang="ts">
-/** 模块详情对话框 — 100% 移植自 madong-vue module-detail */
-import { nextTick, ref, watch } from 'vue';
+/** 模块详情对话框 */
+import { nextTick, ref } from 'vue';
 
 import { ElButton, ElCard, ElIcon, ElTag } from 'element-plus';
 import { Calendar, Key, RotateCw } from 'lucide-vue-next';
@@ -13,7 +13,7 @@ import { getCategoryLabel } from './store';
 
 defineOptions({ name: 'ModuleDetail' });
 
-const props = defineProps<{ moduleId: any }>();
+defineProps<{ moduleId: any }>();
 
 const emit = defineEmits<{
   close: [];
@@ -59,28 +59,14 @@ const handleDownload = () => {
   emit('download', moduleData.value);
   dialogApi.close();
 };
-
 const handleUninstall = async () => {
   await nextTick();
   uninstallDialogRef.value?.openDialog();
   dialogApi.close();
 };
-
 const handleUninstallRefresh = () => {
   emit('refresh');
 };
-
-watch(
-  () => props.moduleId,
-  () => {
-    if (dialogApi.getState().visible) {
-      loading.value = true;
-      setTimeout(() => {
-        loading.value = false;
-      }, 200);
-    }
-  },
-);
 
 defineExpose({ openDialog });
 </script>
@@ -90,7 +76,6 @@ defineExpose({ openDialog });
     <Dialog>
       <ElCard class="box-card !border-none" shadow="never">
         <div v-loading="loading">
-          <!-- 模块基本信息 -->
           <div class="module-info-section mb-6">
             <div class="flex items-start space-x-4">
               <div class="flex-shrink-0">
@@ -123,14 +108,12 @@ defineExpose({ openDialog });
                   <div
                     class="flex items-center text-sm text-gray-600 dark:text-gray-400"
                   >
-                    <ElIcon class="mr-2" :size="16"><Key /></ElIcon>
-                    <span class="font-mono">ID: {{ moduleData.id }}</span>
+                    <ElIcon class="mr-2" :size="16"><Key /></ElIcon><span class="font-mono">ID: {{ moduleData.id }}</span>
                   </div>
                   <div
                     class="flex items-center text-sm text-gray-600 dark:text-gray-400"
                   >
-                    <ElIcon class="mr-2" :size="16"><RotateCw /></ElIcon>
-                    <span>{{
+                    <ElIcon class="mr-2" :size="16"><RotateCw /></ElIcon><span>{{
                       $t('app.plugin.market.detail.version', {
                         ver: moduleData.version || '1.0.0',
                       })
@@ -139,8 +122,7 @@ defineExpose({ openDialog });
                   <div
                     class="flex items-center text-sm text-gray-600 dark:text-gray-400"
                   >
-                    <ElIcon class="mr-2" :size="16"><Calendar /></ElIcon>
-                    <span>{{
+                    <ElIcon class="mr-2" :size="16"><Calendar /></ElIcon><span>{{
                       $t('app.plugin.market.detail.update_time', {
                         time: moduleData.update_time || '-',
                       })
@@ -177,8 +159,6 @@ defineExpose({ openDialog });
               </div>
             </div>
           </div>
-
-          <!-- 模块描述 -->
           <div class="description-section mb-6">
             <h3
               class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3"
@@ -194,8 +174,6 @@ defineExpose({ openDialog });
               </p>
             </div>
           </div>
-
-          <!-- 详细描述 -->
           <div
             class="detail-description-section mb-6"
             v-if="moduleData.detail_description"
@@ -213,8 +191,6 @@ defineExpose({ openDialog });
               </p>
             </div>
           </div>
-
-          <!-- 分类信息 -->
           <div class="category-section mb-6">
             <h3
               class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3"
@@ -229,9 +205,7 @@ defineExpose({ openDialog });
                 <div class="font-medium">
                   {{
                     $t(
-                      `app.plugin.market.categories.${getCategoryLabel(
-                        moduleData.category,
-                      )}`,
+                      `app.plugin.market.categories.${getCategoryLabel(moduleData.category)}`,
                     )
                   }}
                 </div>
@@ -246,8 +220,6 @@ defineExpose({ openDialog });
               </div>
             </div>
           </div>
-
-          <!-- 操作按钮 -->
           <div class="action-section">
             <div class="flex space-x-3 justify-end">
               <ElButton @click="handleClose" size="large">
@@ -290,8 +262,6 @@ defineExpose({ openDialog });
         </div>
       </ElCard>
     </Dialog>
-
-    <!-- 卸载对话框 -->
     <ModuleUninstallDialog
       ref="uninstallDialogRef"
       :plugin="moduleData"

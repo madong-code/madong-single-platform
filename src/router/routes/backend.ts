@@ -13,6 +13,22 @@ import type { RouteRecordStringComponent } from '#/core/shared/types';
  */
 const backendRoutes: RouteRecordStringComponent[] = [
   /**
+   * 代码生成编辑路由
+   * 编辑时使用 router.push({ path: '/app/generator/code', query: { id } })
+   * 不显示在侧边菜单，仅用于代码生成器的编辑功能
+   */
+  {
+    name: 'GeneratorCode',
+    path: '/app/generator/code',
+    component: '/app/generator/generator',
+    meta: {
+      hideInMenu: true,
+      hideInBreadcrumb: true,
+      title: '代码生成编辑',
+      currentActiveMenu: '/app/generator',
+    },
+  },
+  /**
    * 个人中心路由
    * 后端菜单模式下，此路由由后端菜单系统管理
    * 前端仅定义路由入口，不显示在侧边菜单

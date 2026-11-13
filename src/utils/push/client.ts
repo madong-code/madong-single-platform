@@ -1,5 +1,5 @@
-// @ts-expect-error: webman-push.js has no type declarations
-import { Push } from './webman-push.js';
+// @ts-expect-error: push-vue.js has no type declarations
+import { Push } from './push-vue.js';
 
 let pushClient: InstanceType<typeof Push> | null = null;
 const channelCache = new Map<string, any>();
@@ -8,7 +8,7 @@ function isWssEnabled(): boolean {
   return import.meta.env.VITE_GLOB_ENABLE_WSS === 'true';
 }
 
-function getWssConfig(): { url: string; appKey: string } | null {
+function getWssConfig(): null | { appKey: string; url: string } {
   const wssUrl = import.meta.env.VITE_GLOB_WSS_URL;
   const appKey = import.meta.env.VITE_GLOB_WSS_APPKEY;
   if (!wssUrl || !appKey) {
@@ -18,6 +18,9 @@ function getWssConfig(): { url: string; appKey: string } | null {
   return { url: wssUrl, appKey };
 }
 
+/**
+ * 获取全局 Push 单例（platform 端仅一条 WS 连接）
+ */
 export function getPushClient(): InstanceType<typeof Push> | null {
   if (!isWssEnabled()) return null;
 
@@ -28,7 +31,7 @@ export function getPushClient(): InstanceType<typeof Push> | null {
     pushClient = new Push({
       url: config.url,
       app_key: config.appKey,
-      auth: '/adminapi/plugin/webman/push/auth',
+      auth: '/platformapi/plugin/webman/push/auth',
     });
 
     console.log('[PushClient] WebSocket 连接已创建');
@@ -37,13 +40,12 @@ export function getPushClient(): InstanceType<typeof Push> | null {
   return pushClient;
 }
 
-export function subscribeUserChannel(userId: string): any | null {
-  if (!isWssEnabled()) return null;
-
+/**
+ * 订阅频道（带缓存，避免重复订阅）
+ */
+export function subscribeChannel(channelName: string): any | null {
   const client = getPushClient();
   if (!client) return null;
-
-  const channelName = `backend-admin-${userId}`;
 
   if (channelCache.has(channelName)) {
     return channelCache.get(channelName);
@@ -55,6 +57,14 @@ export function subscribeUserChannel(userId: string): any | null {
   console.log(`[PushClient] 订阅频道: ${channelName}`);
 
   return channel;
+}
+
+/**
+ * 订阅当前用户频道
+ * platform 端频道格式：backend-platform-*-{userId}（与后端 MenuBadgePushService::buildChannels 一致，平台无租户）
+ */
+export function subscribeUserChannel(userId: string): any | null {
+  return subscribeChannel(`backend-platform-*-${userId}`);
 }
 
 export function destroyPushClient(): void {

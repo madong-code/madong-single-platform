@@ -25,18 +25,11 @@ const flattenTree = (nodes: any[]): any[] => {
 };
 
 const displayValue = computed(() => {
-  if (
-    options.value.length === 0 ||
-    props.value === null ||
-    props.value === undefined
-  )
-    return null;
+  if (options.value.length === 0 || props.value == null) return null;
   const flat = flattenTree(options.value);
   const vals = Array.isArray(props.value) ? props.value : [props.value];
   const names = vals.map((v) => {
-    const opt = flat.find(
-      (o: any) => String(o[valueField.value]) === String(v),
-    );
+    const opt = flat.find((o: any) => o[valueField.value] == v);
     return opt ? opt[labelField.value] : v;
   });
   return names.join(', ');

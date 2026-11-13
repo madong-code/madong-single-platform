@@ -37,10 +37,10 @@ const crudSchemaDef = (): CrudSchema => {
     hasView: true,
     hasRemove: true,
     permissions: {
-      add: 'system:admin:create',
-      edit: 'system:admin:update',
-      remove: 'system:admin:delete',
-      view: 'system:admin:read',
+      add: 'system:user:create',
+      edit: 'system:user:update',
+      remove: 'system:user:delete',
+      view: 'system:user:read',
     },
     columns: [
       { type: 'checkbox', width: 60 },
@@ -145,52 +145,20 @@ interface CrudSchema {
 
 ### formDialog
 
-表单弹窗配置，支持 `modal` 与 `drawer` 两种形态：
+表单弹窗配置：
 
 ```typescript
 interface FormDialogConfig {
-  /** 是否启用，默认 true */
+  /** 是否启用 */
   enabled?: boolean;
   /** 弹窗标题 */
   title?: string;
-  /** 弹窗宽度，Tailwind class，如 'w-[50%]'；默认 'w-[60%]' */
+  /** 弹窗宽度 */
   width?: string;
-  /** 弹窗类型，默认 'modal' */
-  dialogType?: 'drawer' | 'modal';
-  /** 表单布局，默认 'horizontal' */
-  layout?: 'horizontal' | 'inline' | 'vertical';
-  /** Grid 布局 class，控制表单列数，默认 'grid-cols-1' */
-  wrapperClass?: string;
-  /** 表单通用配置 */
-  commonConfig?: FormDialogCommonConfig;
-  /** 行数据主键，默认 'id' */
-  rowKey?: string;
-  /** 是否可拖拽（仅 modal 有效），默认 true */
-  draggable?: boolean;
-  /** 是否显示全屏按钮，默认 true（modal 与 drawer 均适用） */
-  fullscreenButton?: boolean;
-  /** 弹窗组件额外 CSS class，如 'top-0' */
-  class?: string;
-  /** 弹窗层级，嵌套弹窗时需设更高值 */
-  zIndex?: number;
   /** 表单字段配置 */
   schema?: VbenFormSchema[] | (() => VbenFormSchema[]);
   /** 提交前转换表单值 */
-  transformFormValues?: (
-    values: Record<string, any>,
-    type: FormActionType,
-  ) => Record<string, any>;
-  /** 其它配置：api、onSuccess、beforeSubmit、onOpen、confirmText、cancelText */
-}
-```
-
-**全屏按钮的默认值分层**：底层 `useVbenModal` 默认显示、`useVbenDrawer` 默认不显示；CRUD 的 `FormDialog` 对两者都按 `fullscreenButton !== false` 默认开启。因此业务直接使用 `useVbenDrawer` 时若需要全屏按钮，必须显式传 `fullscreenButton: true`；CRUD 页面则要关闭时配置为 `false`：
-
-```typescript
-formDialog: {
-  enabled: true,
-  dialogType: 'drawer',
-  fullscreenButton: false,
+  transformFormValues?: (values: Record<string, any>) => Record<string, any>;
 }
 ```
 
@@ -200,10 +168,10 @@ formDialog: {
 
 ```typescript
 permissions: {
-  add: 'system:admin:create',
-  edit: 'system:admin:update',
-  remove: 'system:admin:delete',
-  view: 'system:admin:read',
+  add: 'system:user:create',
+  edit: 'system:user:update',
+  remove: 'system:user:delete',
+  view: 'system:user:read',
 }
 ```
 
@@ -216,7 +184,7 @@ dropDownActions: [
   {
     label: '编辑',
     icon: 'ant-design:edit-outlined',
-    auth: 'system:admin:update',
+    auth: 'system:user:update',
     onClick: ({ row, crudApi }) => {
       crudApi.openEditDialog(row);
     },
@@ -225,7 +193,7 @@ dropDownActions: [
     label: '删除',
     icon: 'ant-design:delete-outlined',
     type: 'danger',
-    auth: 'system:admin:delete',
+    auth: 'system:user:delete',
     onClick: ({ row, crudApi }) => {
       crudApi.openDeleteConfirm(row);
     },

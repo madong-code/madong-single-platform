@@ -19,9 +19,7 @@ const displayValue = computed(() => {
   if (options.value.length === 0 || !props.value?.length) return null;
   return props.value
     .map((v) => {
-      const opt = options.value.find(
-        (o: any) => String(o[valueField.value]) === String(v),
-      );
+      const opt = options.value.find((o: any) => o[valueField.value] == v);
       return opt ? opt[labelField.value] : v;
     })
     .join(', ');

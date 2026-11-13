@@ -1,5 +1,4 @@
 <script setup lang="ts">
-/** 三步安装对话框：环境检查 → 安装进度 → 安装完成 — 100% 移植自 madong-vue module-install-dialog */
 import { nextTick, onUnmounted, ref } from 'vue';
 
 import {
@@ -19,7 +18,6 @@ import { $t } from '#/locales';
 defineOptions({ name: 'ModuleInstallDialog' });
 
 const props = defineProps<{ plugin: any }>();
-
 const emit = defineEmits<{ close: []; refresh: [] }>();
 
 const [Dialog, dialogApi] = useDialog({
@@ -44,7 +42,7 @@ let sseConn: null | { close: () => void } = null;
 
 const openDialog = async () => {
   if (!props.plugin?.name && !props.plugin?.code) {
-    ElMessage.error($t('app.plugin.market.invalid_env_check'));
+    ElMessage.error('模块信息不完整');
     return;
   }
   dialogApi.open();
@@ -69,9 +67,7 @@ const loadEnvironmentChecks = async () => {
     environmentChecks.value = response?.paths
       ? response.paths.map((item: any) => ({
           path: item.path,
-          requirement: item.requirement === 'readable'
-            ? $t('app.plugin.market.standalone.install.readable')
-            : $t('app.plugin.market.standalone.install.writable'),
+          requirement: item.requirement === 'readable' ? '可读' : '可写',
           status: item.status,
         }))
       : [];
@@ -88,7 +84,6 @@ const handleClose = () => {
   dialogApi.close();
   emit('close');
 };
-
 const scrollToBottom = () => {
   nextTick(() => {
     if (logsContainer.value)
@@ -99,7 +94,7 @@ const scrollToBottom = () => {
 const startInstallation = async () => {
   currentStep.value = 2;
   installationProgress.value = 0;
-  installationLogs.value = [$t('app.plugin.market.standalone.install.log_start')];
+  installationLogs.value = ['开始安装...'];
   await startSseInstallation();
 };
 
@@ -107,11 +102,8 @@ const startSseInstallation = async () => {
   const installMode = props.plugin.is_local === 1 ? 'local' : 'remote';
   const url = `/plugin/${props.plugin.code}/install?source=${installMode}`;
   sseConn = sse(url, {
-    open: () => {
-      // SSE连接已打开
-    },
+    open: () => {},
     progress: (payload: any) => {
-      // Sse::make() 包裹数据，实际内容在 payload.data 中
       const eventData = payload?.data || payload;
       if (eventData.progress !== undefined)
         installationProgress.value = eventData.progress;
@@ -133,14 +125,9 @@ const startSseInstallation = async () => {
       scrollToBottom();
     },
     warning: (payload: any) => {
-      // warning 处理器：插件已安装等提示信息
       const eventData = payload?.data || payload;
       if (eventData.message) {
-        installationLogs.value.push(
-          $t('app.plugin.market.standalone.install.log_warn_prefix', {
-            msg: eventData.message,
-          }),
-        );
+        installationLogs.value.push(`警告: ${eventData.message}`);
         scrollToBottom();
       }
       installationStatus.value = 'warning';
@@ -150,14 +137,9 @@ const startSseInstallation = async () => {
       scrollToBottom();
     },
     error: (payload: any) => {
-      // error 处理器仅在服务器主动发送 event: error 时触发（连接关闭不会触发此处理器）
       const eventData = payload?.data || payload;
       if (eventData.message) {
-        installationLogs.value.push(
-          $t('app.plugin.market.standalone.install.log_error_prefix', {
-            msg: eventData.message,
-          }),
-        );
+        installationLogs.value.push(`错误: ${eventData.message}`);
         installationStatus.value = 'exception';
         currentStep.value = 3;
         installationResult.value = 'error';
@@ -166,12 +148,8 @@ const startSseInstallation = async () => {
       }
     },
     onError: () => {
-      // onError 仅在连接意外断开时触发（没有收到服务器 error 事件）
-      // 如果已完成就不覆盖成功状态
       if (currentStep.value < 3) {
-        installationLogs.value.push(
-          $t('app.plugin.market.standalone.install.sse_error'),
-        );
+        installationLogs.value.push('SSE连接错误');
         installationStatus.value = 'exception';
         currentStep.value = 3;
         installationResult.value = 'error';
@@ -180,7 +158,6 @@ const startSseInstallation = async () => {
       }
     },
     message: (payload: any) => {
-      // 兜底处理器：捕获没有命名事件的 SSE 消息
       const eventData = payload?.data || payload;
       if (eventData.message) {
         installationLogs.value.push(eventData.message);
@@ -194,11 +171,10 @@ const handleRefresh = () => {
   emit('refresh');
   handleClose();
 };
-
 const handleRetry = () => {
   currentStep.value = 2;
   installationProgress.value = 0;
-  installationLogs.value = [$t('app.plugin.market.standalone.install.log_retry')];
+  installationLogs.value = ['开始重新安装...'];
   installationStatus.value = '';
   installationResult.value = 'success';
   startSseInstallation();
@@ -215,7 +191,6 @@ defineExpose({ openDialog });
   <Dialog>
     <ElCard class="box-card !border-none" shadow="never">
       <div v-loading="loading">
-        <!-- 步骤指示器 -->
         <div class="steps-indicator mb-6">
           <div
             class="step"
@@ -244,8 +219,6 @@ defineExpose({ openDialog });
             </div>
           </div>
         </div>
-
-        <!-- 环境检查 -->
         <div v-if="currentStep === 1" class="mt-5 environment-check">
           <ElTable :data="environmentChecks" style="width: 100%">
             <ElTableColumn
@@ -281,8 +254,6 @@ defineExpose({ openDialog });
             </ElButton>
           </div>
         </div>
-
-        <!-- 安装进度 -->
         <div v-else-if="currentStep === 2" class="installation-progress mt-5">
           <ElProgress
             :percentage="installationProgress"
@@ -300,29 +271,25 @@ defineExpose({ openDialog });
             </div>
           </div>
         </div>
-
-        <!-- 安装完成 -->
         <div v-else-if="currentStep === 3" class="installation-complete">
-          <div class="mt-2">
-            <p class="text-sm font-medium text-gray-700 mb-2">
-              {{ $t('app.plugin.market.standalone.install.log_title') }}：
-            </p>
-            <div ref="logsContainer" class="installation-logs">
-              <div
-                v-for="(log, idx) in installationLogs"
-                :key="idx"
-                class="text-sm mb-1"
-                :class="{
-                  'text-green-400':
-                    idx === installationLogs.length - 1 &&
-                    installationResult === 'success',
-                  'text-red-400':
-                    idx === installationLogs.length - 1 &&
-                    installationResult === 'error',
-                }"
-              >
-                {{ log }}
-              </div>
+          <p class="text-sm font-medium text-gray-700 mb-2">
+            {{ $t('app.plugin.market.standalone.install.log_title') }}：
+          </p>
+          <div ref="logsContainer" class="installation-logs">
+            <div
+              v-for="(log, idx) in installationLogs"
+              :key="idx"
+              class="text-sm mb-1"
+              :class="{
+                'text-green-400':
+                  idx === installationLogs.length - 1 &&
+                  installationResult === 'success',
+                'text-red-400':
+                  idx === installationLogs.length - 1 &&
+                  installationResult === 'error',
+              }"
+            >
+              {{ log }}
             </div>
           </div>
           <div class="mt-6 flex justify-end">

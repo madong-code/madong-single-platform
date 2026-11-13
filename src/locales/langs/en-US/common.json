@@ -74,7 +74,8 @@
     "no": "No"
   },
 
-  "operation": "Operations",
+  "success": "Operation successful",
+
   "operation_success": "Operation successful",
   "confirm": "Confirm",
   "cancel": "Cancel",

@@ -2,19 +2,11 @@
 /** 模块列表：卡片/表格视图 + 分页 + 操作弹窗 */
 import { computed, nextTick, ref, watch } from 'vue';
 
-import {
-  ElButton,
-  ElDropdown,
-  ElDropdownItem,
-  ElDropdownMenu,
-  ElIcon,
-  ElPagination,
-  ElTag,
-} from 'element-plus';
+import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElPagination, ElTag } from 'element-plus';
 import { Info, Key, Package } from 'lucide-vue-next';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { Icon } from '#/components/icon';
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { $t } from '#/locales';
 
 import ModuleInstallDialog from './module-install-dialog.vue';
@@ -63,14 +55,25 @@ watch(
 const tableGridOptions = computed<any>(() => ({
   data: props.modules,
   columns: [
-    { type: 'seq', title: $t('app.plugin.market.column_seq'), width: 60, align: 'center' },
+    {
+      type: 'seq',
+      title: $t('app.plugin.market.column_seq'),
+      width: 60,
+      align: 'center',
+    },
     {
       field: 'name',
       title: $t('app.plugin.market.column_module'),
       minWidth: 200,
+      align: 'left',
       slots: { default: 'name' },
     },
-    { field: 'version', title: $t('app.plugin.market.column_version'), width: 100, align: 'center' },
+    {
+      field: 'version',
+      title: $t('app.plugin.market.column_version'),
+      width: 100,
+      align: 'center',
+    },
     {
       field: 'is_installed',
       title: $t('app.plugin.market.column_status'),
@@ -132,27 +135,20 @@ const showUpdateLog = (mod: any) => {
   upgradeLogRef.value?.openDialog(mod);
 };
 
-/** 表格「更多」下拉命令：与 CRUD TableAction 行为对齐 */
+// 更多下拉命令派发（与 admin 端表格操作栏一致）
 const handleMore = (mod: any, cmd: string) => {
   switch (cmd) {
-    case 'delete': {
-      deleteModule(mod);
-      break;
-    }
     case 'install':
     case 'download':
-    case 'update': {
+    case 'update':
       downloadModule(mod);
       break;
-    }
-    case 'log': {
-      showUpdateLog(mod);
-      break;
-    }
-    case 'uninstall': {
+    case 'uninstall':
       uninstallModule(mod);
       break;
-    }
+    case 'delete':
+      deleteModule(mod);
+      break;
   }
 };
 
@@ -444,7 +440,6 @@ const handleCurrentChange = (page: number) => {
 </template>
 
 <style scoped>
-/* ── 整体容器 ───────────────────────────── */
 .module-list-container {
   display: flex;
   flex: 1;
@@ -452,7 +447,6 @@ const handleCurrentChange = (page: number) => {
   min-height: 0;
 }
 
-/* ── 空状态 ──────────────────────────────── */
 .empty-state {
   display: flex;
   flex: 1;
@@ -467,7 +461,6 @@ const handleCurrentChange = (page: number) => {
   margin-bottom: 16px;
 }
 
-/* ── 卡片网格 ───────────────────────────── */
 .card-view {
   display: flex;
   flex: 1;
@@ -477,7 +470,7 @@ const handleCurrentChange = (page: number) => {
 
 .card-grid {
   display: grid;
-  /* 固定每行 4 张卡片, 与平台端「我的应用」保持一致 */
+  /* 固定每行 4 张卡片, 与 installed 保持一致 */
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 16px;
@@ -589,7 +582,6 @@ const handleCurrentChange = (page: number) => {
   gap: 8px;
 }
 
-/* ── vxe-grid 表格 ──────────────────────── */
 .table-logo {
   display: flex;
   flex-shrink: 0;
@@ -604,10 +596,10 @@ const handleCurrentChange = (page: number) => {
 
 .table-actions {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
   align-items: center;
-  justify-content: flex-start;
-  white-space: nowrap;
+  justify-content: center;
 }
 
 .vxe-grid-wrapper {
@@ -623,9 +615,9 @@ html:not(.dark) .vxe-grid-wrapper :deep(.vxe-header--column) {
   background-color: var(--el-color-primary-light-9, #ecf5ff) !important;
 }
 
-/* ── 分页 ──────────────────────────────── */
 .pagination-footer {
   display: flex;
+  flex-shrink: 0;
   justify-content: flex-end;
   padding: 12px 0 0;
   margin-top: auto;
@@ -635,7 +627,7 @@ html:not(.dark) .vxe-grid-wrapper :deep(.vxe-header--column) {
 /* ── 骨架屏（首次加载占位）────────────── */
 .skeleton-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
 }
 .skeleton-card {
@@ -710,24 +702,20 @@ html:not(.dark) .vxe-grid-wrapper :deep(.vxe-header--column) {
   }
 }
 
-/* ── 响应式 ──────────────────────────────── */
 @media (max-width: 1280px) {
-  .card-grid,
-  .skeleton-grid {
+  .card-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 1024px) {
-  .card-grid,
-  .skeleton-grid {
+  .card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 768px) {
-  .card-grid,
-  .skeleton-grid {
+  .card-grid {
     grid-template-columns: 1fr;
   }
 }

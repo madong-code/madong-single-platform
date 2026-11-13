@@ -23,20 +23,12 @@ export const CellOperationRenderer = {
       ...props,
     };
 
-    let align: string;
-    switch (column.align) {
-      case 'center': {
-        align = 'center';
-        break;
-      }
-      case 'left': {
-        align = 'flex-start';
-        break;
-      }
-      default: {
-        align = 'flex-end';
-      }
-    }
+    const align =
+      column.align === 'center'
+        ? 'center'
+        : (column.align === 'left'
+          ? 'flex-start'
+          : 'flex-end');
 
     // 预设配置（可扩展）
     const presets: Record<string, Record<string, any>> = {
@@ -49,8 +41,8 @@ export const CellOperationRenderer = {
     // 动态解析
     const resolveDynamic = <T,>(
       val: ((row: any) => T) | T,
-      defaultVal?: T,
-    ): T | undefined => {
+      defaultVal: T,
+    ): T => {
       try {
         return typeof val === 'function'
           ? ((val as (row: any) => T)(row) ?? defaultVal)
@@ -99,7 +91,8 @@ export const CellOperationRenderer = {
 
     // 渲染按钮
     const renderBtn = (opt: any, listen = true) => {
-      const { icon: _icon, ...restOpt } = opt;
+      const restOpt = { ...opt };
+      delete restOpt.icon;
       return (
         <ElButton
           {...restOpt}
