@@ -26,7 +26,7 @@ export async function uploadAvatarFile(
 ): Promise<{ avatar: string }> {
   const formData = new FormData();
   formData.append('file', file);
-  return requestClient.put('/auth/avatar', formData, {
+  return requestClient.put('/auth/profile/avatar', formData, {
     headers: { 'Content-Type': undefined },
   });
 }
