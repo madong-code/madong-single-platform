@@ -9,6 +9,7 @@ import {
   verifyToken,
 } from '../utils/admin/auth';
 import { ROLES, ROLE_MENU_IDS, SESSIONS } from '../utils/admin/datasets';
+import { PLATFORM_MENUS } from '../utils/admin/platform-menus';
 import { buildMenuTree, PERM_CODES, vbenMenus } from '../utils/admin/menu-data';
 import { failWith, paginate } from '../utils/admin/response';
 import { nextId, now } from '../utils/admin/store';
@@ -41,6 +42,27 @@ function buildUserInfo(user: Record<string, any>) {
 }
 
 const routes: RouteDef[] = [
+  // ==================== 站点信息（登录前，对应 /login/site-info） ====================
+  {
+    method: 'GET',
+    pattern: '/auth/site-info',
+    public: true,
+    handler: () => ({
+      site_name: '平台管理',
+      site_logo: '/logo.png',
+      site_favicon: '/favicon.ico',
+      site_copyright: '© 2026 Madong',
+      site_open: 1,
+      site_url: '',
+      upload_mode: 'local',
+      cdn_url: '',
+      static_url: '',
+      cdn_url_params: '',
+      is_private: 0,
+      storage_prefix: '',
+    }),
+  },
+
   // ==================== 登录/登出/刷新 ====================
   {
     method: 'POST',
@@ -102,6 +124,12 @@ const routes: RouteDef[] = [
     method: 'GET',
     pattern: '/system/auth/user-menus',
     handler: () => vbenMenus(),
+  },
+  // platform 前端菜单：与真实后端 platform_menu 种子数据一致
+  {
+    method: 'GET',
+    pattern: '/auth/platform-menus',
+    handler: () => PLATFORM_MENUS,
   },
   {
     method: 'GET',

@@ -7,6 +7,8 @@ import contentRoutes from './content';
 import devtoolsRoutes from './devtools';
 import pluginRoutes from './plugin';
 import systemRoutes from './system';
+import tenantRoutes from './tenant';
+import templateRoutes from './template';
 
 /** 路径参数数量（:name 捕获段），用于稳定排序：静态路径优先于参数路径 */
 function paramCount(pattern: string): number {
@@ -21,6 +23,8 @@ const all: RouteDef[] = [
   ...devtoolsRoutes,
   ...codegenRoutes,
   ...pluginRoutes,
+  ...tenantRoutes,
+  ...templateRoutes,
 ];
 
 /**
