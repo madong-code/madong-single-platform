@@ -26,6 +26,7 @@
   "type": "module",
   "scripts": {
     "bootstrap": "pnpm install",
+    "clean": "rimraf node_modules && pnpm -r exec rimraf node_modules",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build --mode production",
     "build:analyze": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build --mode analyze",
     "build:integrated": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build --mode integrated",

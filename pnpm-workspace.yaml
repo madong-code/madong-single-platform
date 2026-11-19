@@ -190,8 +190,10 @@ catalog:
   zod-defaults: 0.1.3
 
 allowBuilds:
+  '@logicflow/core': true
   '@parcel/watcher': true
   core-js: true
+  es5-ext: true
   esbuild: true
   lefthook: true
   vue-demi: true
